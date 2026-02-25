@@ -1,0 +1,21 @@
+// Configuration for @copilot-proxy/core.
+// Edit this file to add MCP servers, control tool access, and set permissions.
+
+{
+  // MCP servers to connect to the Copilot SDK.
+  mcpServers: {},
+
+  // Built-in Copilot CLI tools allowlist. Use ["*"] to allow all, [] to deny
+  // all, or list specific tools like ["glob", "grep", "bash"].
+  allowedCliTools: ["*"],
+
+  // Maximum request body size in MiB.
+  bodyLimitMiB: 10,
+
+  // Reasoning effort for models that support it: "low", "medium", "high", "xhigh".
+  // reasoningEffort: null,
+
+  // Auto-approve permission requests. Set to true to approve all, false to deny
+  // all, or pass an array of specific kinds: ["read", "write", "shell", "mcp", "url"].
+  autoApprovePermissions: true,
+}
