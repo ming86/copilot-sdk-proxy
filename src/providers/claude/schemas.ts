@@ -130,7 +130,7 @@ const KnownContentBlockSchema = z.discriminatedUnion("type", [
 // server_tool_use) don't fail validation. We filter them out after parsing.
 const LooseContentBlockSchema = z.union([
   KnownContentBlockSchema,
-  z.object({ type: z.string() }).passthrough(),
+  z.looseObject({ type: z.string() }),
 ]);
 
 const KNOWN_BLOCK_TYPES = new Set(["text", "tool_use", "tool_result"]);

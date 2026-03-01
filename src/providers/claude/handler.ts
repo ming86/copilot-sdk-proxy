@@ -61,7 +61,8 @@ export function createMessagesHandler(
     if (!parseResult.success) {
       const firstIssue = parseResult.error.issues[0];
       const message = firstIssue?.message ?? "Invalid request body";
-      logger.warn(`Schema validation failed: ${message} (path: ${firstIssue?.path?.join(".") ?? "root"})`);
+      const path = firstIssue?.path.join(".") || "root";
+      logger.warn(`Schema validation failed: ${message} (path: ${path})`);
       sendError(reply, 400, "invalid_request_error", message);
       return;
     }
