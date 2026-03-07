@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createSessionConfig } from "../src/providers/shared/session-config.js";
 import { Logger } from "../src/logger.js";
 import type { ServerConfig } from "../src/config.js";
@@ -229,5 +229,89 @@ describe("createSessionConfig", () => {
     });
     const response = await result.hooks!.onPreToolUse!({ toolName: "custom_tool" } as never, { sessionId: "test" });
     expect(response).toEqual({ permissionDecision: "allow" });
+  });
+
+  it("hooks.onPostToolUse logs tool execution at debug level", async () => {
+    const debugLogger = new Logger("debug");
+    const spy = vi.spyOn(debugLogger, "debug").mockImplementation(() => {});
+    const result = createSessionConfig({
+      model: "gpt-4",
+      logger: debugLogger,
+      config: defaultConfig({ allowedCliTools: ["*"] }),
+      supportsReasoningEffort: false,
+    });
+    await result.hooks!.onPostToolUse!(
+      { toolName: "bash", toolArgs: { command: "ls" }, toolResult: {}, timestamp: 0, cwd: "/" } as never,
+      { sessionId: "test" },
+    );
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining("Tool executed: bash"), { command: "ls" });
+  });
+
+  it("hooks.onErrorOccurred returns retry for recoverable model_call errors", () => {
+    const warnLogger = new Logger("warning");
+    const spy = vi.spyOn(warnLogger, "warn").mockImplementation(() => {});
+    const result = createSessionConfig({
+      model: "gpt-4",
+      logger: warnLogger,
+      config: defaultConfig(),
+      supportsReasoningEffort: false,
+    });
+    const output = result.hooks!.onErrorOccurred!(
+      { error: "rate limit", errorContext: "model_call", recoverable: true, timestamp: 0, cwd: "/" } as never,
+      { sessionId: "test" },
+    );
+    expect(output).toEqual({ errorHandling: "retry", retryCount: 2 });
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining("model_call"));
+  });
+
+  it("hooks.onErrorOccurred returns retry for recoverable tool_execution errors", () => {
+    const warnLogger = new Logger("warning");
+    const spy = vi.spyOn(warnLogger, "warn").mockImplementation(() => {});
+    const result = createSessionConfig({
+      model: "gpt-4",
+      logger: warnLogger,
+      config: defaultConfig(),
+      supportsReasoningEffort: false,
+    });
+    const output = result.hooks!.onErrorOccurred!(
+      { error: "timeout", errorContext: "tool_execution", recoverable: true, timestamp: 0, cwd: "/" } as never,
+      { sessionId: "test" },
+    );
+    expect(output).toEqual({ errorHandling: "retry", retryCount: 2 });
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining("tool_execution"));
+  });
+
+  it("hooks.onErrorOccurred does not retry non-recoverable errors", () => {
+    const warnLogger = new Logger("warning");
+    const spy = vi.spyOn(warnLogger, "warn").mockImplementation(() => {});
+    const result = createSessionConfig({
+      model: "gpt-4",
+      logger: warnLogger,
+      config: defaultConfig(),
+      supportsReasoningEffort: false,
+    });
+    const output = result.hooks!.onErrorOccurred!(
+      { error: "fatal", errorContext: "model_call", recoverable: false, timestamp: 0, cwd: "/" } as never,
+      { sessionId: "test" },
+    );
+    expect(output).toBeUndefined();
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining("not recoverable"));
+  });
+
+  it("hooks.onErrorOccurred does not retry system errors", () => {
+    const warnLogger = new Logger("warning");
+    const spy = vi.spyOn(warnLogger, "warn").mockImplementation(() => {});
+    const result = createSessionConfig({
+      model: "gpt-4",
+      logger: warnLogger,
+      config: defaultConfig(),
+      supportsReasoningEffort: false,
+    });
+    const output = result.hooks!.onErrorOccurred!(
+      { error: "internal", errorContext: "system", recoverable: true, timestamp: 0, cwd: "/" } as never,
+      { sessionId: "test" },
+    );
+    expect(output).toBeUndefined();
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining("system"));
   });
 });

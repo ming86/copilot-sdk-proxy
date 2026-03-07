@@ -93,6 +93,18 @@ export function createSessionConfig({
         logger.debug(`Tool "${toolName}": denied (not in any allowlist)`);
         return Promise.resolve({ permissionDecision: "deny" as const });
       },
+
+      onPostToolUse: (input) => {
+        logger.debug(`Tool executed: ${input.toolName}`, input.toolArgs);
+      },
+
+      onErrorOccurred: (input) => {
+        logger.warn(`SDK error (${input.errorContext}, ${input.recoverable ? "recoverable" : "not recoverable"}): ${input.error}`);
+        if (input.recoverable && (input.errorContext === "model_call" || input.errorContext === "tool_execution")) {
+          return { errorHandling: "retry" as const, retryCount: 2 };
+        }
+        return undefined;
+      },
     },
   };
 }
