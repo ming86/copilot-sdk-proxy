@@ -40,6 +40,27 @@ export class AnthropicProtocol implements StreamProtocol {
   private textBlockIndex = 0;
   private thinkingBlockIndex = 0;
 
+  closeOpenBlocks(r: FastifyReply): number {
+    this.closeTextBlock(r);
+    if (this.thinkingBlockStarted) {
+      sendEvent(r, "content_block_stop", {
+        type: "content_block_stop",
+        index: this.thinkingBlockIndex,
+      } satisfies ContentBlockStopEvent);
+      this.nextBlockIndex = this.thinkingBlockIndex + 1;
+      this.thinkingBlockStarted = false;
+    }
+    return this.nextBlockIndex;
+  }
+
+  reset(): void {
+    this.textBlockStarted = false;
+    this.thinkingBlockStarted = false;
+    this.nextBlockIndex = 0;
+    this.textBlockIndex = 0;
+    this.thinkingBlockIndex = 0;
+  }
+
   protected closeTextBlock(r: FastifyReply): void {
     if (this.textBlockStarted) {
       sendEvent(r, "content_block_stop", {
