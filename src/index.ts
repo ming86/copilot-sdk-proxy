@@ -43,14 +43,17 @@ export {
   type MCPServer,
   type ApprovalRule,
   type ReasoningEffort,
+  type ProviderName,
 } from "./config.js";
 export {
   ServerConfigSchema,
+  ProviderConfigSchema,
   MCPLocalServerSchema,
   MCPRemoteServerSchema,
   MCPServerSchema,
   ApprovalRuleSchema,
   ReasoningEffortSchema,
+  PROVIDER_NAMES,
   type RawServerConfig,
 } from "./schemas/config.js";
 
@@ -76,7 +79,7 @@ export {
 
 // Provider types and registry
 export { type Provider } from "./providers/types.js";
-export { providers, type ProviderName } from "./providers/index.js";
+export { providers } from "./providers/index.js";
 
 // OpenAI provider
 export {
