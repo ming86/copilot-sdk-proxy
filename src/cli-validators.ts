@@ -1,15 +1,14 @@
 import { LEVEL_PRIORITY, type LogLevel } from "./logger.js";
-import { providers, type ProviderName } from "./providers/index.js";
+import { PROVIDER_NAMES, type ProviderName } from "./schemas/config.js";
 
 const VALID_LOG_LEVELS = Object.keys(LEVEL_PRIORITY) as LogLevel[];
-const VALID_PROVIDERS = Object.keys(providers) as ProviderName[];
 
 function isLogLevel(value: string): value is LogLevel {
   return value in LEVEL_PRIORITY;
 }
 
 export function isProviderName(value: string): value is ProviderName {
-  return value in providers;
+  return (PROVIDER_NAMES as readonly string[]).includes(value);
 }
 
 const MAX_PORT = 65535;
@@ -34,7 +33,7 @@ export function parseLogLevel(value: string): LogLevel {
 export function parseProvider(value: string): ProviderName {
   if (!isProviderName(value)) {
     throw new Error(
-      `Invalid provider "${value}". Valid: ${VALID_PROVIDERS.join(", ")}`,
+      `Invalid provider "${value}". Valid: ${PROVIDER_NAMES.join(", ")}`,
     );
   }
   return value;

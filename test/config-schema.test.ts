@@ -4,7 +4,9 @@ import { ServerConfigSchema } from "../src/schemas/config.js";
 describe("ServerConfigSchema", () => {
   it("provides defaults for all fields", () => {
     const result = ServerConfigSchema.parse({});
-    expect(result.mcpServers).toEqual({});
+    expect(result.openai.mcpServers).toEqual({});
+    expect(result.claude.mcpServers).toEqual({});
+    expect(result.codex.mcpServers).toEqual({});
     expect(result.allowedCliTools).toEqual([]);
     expect(result.bodyLimit).toBe(10);
     expect(result.autoApprovePermissions).toBe(true);
@@ -12,11 +14,13 @@ describe("ServerConfigSchema", () => {
 
   it("parses a valid full config", () => {
     const result = ServerConfigSchema.parse({
-      mcpServers: {
-        test: {
-          type: "local",
-          command: "node",
-          args: ["server.js"],
+      openai: {
+        mcpServers: {
+          test: {
+            type: "local",
+            command: "node",
+            args: ["server.js"],
+          },
         },
       },
       allowedCliTools: ["glob", "grep"],
@@ -24,7 +28,8 @@ describe("ServerConfigSchema", () => {
       reasoningEffort: "high",
       autoApprovePermissions: ["read", "write"],
     });
-    expect(result.mcpServers.test).toBeDefined();
+    expect(result.openai.mcpServers.test).toBeDefined();
+    expect(result.claude.mcpServers).toEqual({});
     expect(result.allowedCliTools).toEqual(["glob", "grep"]);
     expect(result.bodyLimit).toBe(5);
     expect(result.reasoningEffort).toBe("high");
@@ -33,41 +38,47 @@ describe("ServerConfigSchema", () => {
 
   it("accepts remote MCP server config", () => {
     const result = ServerConfigSchema.parse({
-      mcpServers: {
-        remote: {
-          type: "http",
-          url: "https://example.com/mcp",
+      claude: {
+        mcpServers: {
+          remote: {
+            type: "http",
+            url: "https://example.com/mcp",
+          },
         },
       },
     });
-    expect(result.mcpServers.remote).toBeDefined();
+    expect(result.claude.mcpServers.remote).toBeDefined();
   });
 
   it("accepts SSE-type MCP server config", () => {
     const result = ServerConfigSchema.parse({
-      mcpServers: {
-        sse: {
-          type: "sse",
-          url: "https://example.com/sse",
-          headers: { Authorization: "Bearer token" },
+      openai: {
+        mcpServers: {
+          sse: {
+            type: "sse",
+            url: "https://example.com/sse",
+            headers: { Authorization: "Bearer token" },
+          },
         },
       },
     });
-    expect(result.mcpServers.sse).toBeDefined();
+    expect(result.openai.mcpServers.sse).toBeDefined();
   });
 
   it("accepts stdio-type MCP server config", () => {
     const result = ServerConfigSchema.parse({
-      mcpServers: {
-        stdio: {
-          type: "stdio",
-          command: "python",
-          args: ["server.py"],
-          env: { PATH: "/usr/bin" },
+      codex: {
+        mcpServers: {
+          stdio: {
+            type: "stdio",
+            command: "python",
+            args: ["server.py"],
+            env: { PATH: "/usr/bin" },
+          },
         },
       },
     });
-    expect(result.mcpServers.stdio).toBeDefined();
+    expect(result.codex.mcpServers.stdio).toBeDefined();
   });
 
   it("rejects bodyLimit exceeding 100", () => {
@@ -118,8 +129,10 @@ describe("ServerConfigSchema", () => {
 
   it("rejects MCP server with empty command", () => {
     const result = ServerConfigSchema.safeParse({
-      mcpServers: {
-        bad: { type: "local", command: "", args: [] },
+      openai: {
+        mcpServers: {
+          bad: { type: "local", command: "", args: [] },
+        },
       },
     });
     expect(result.success).toBe(false);

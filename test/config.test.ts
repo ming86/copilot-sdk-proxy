@@ -59,7 +59,7 @@ describe("loadConfig", () => {
     err.code = "ENOENT";
     mockReadFile.mockRejectedValue(err);
 
-    const config = await loadConfig("/nonexistent/config.json5", logger);
+    const config = await loadConfig("/nonexistent/config.json5", logger, "openai");
     expect(config.allowedCliTools).toEqual(["*"]);
     expect(config.autoApprovePermissions).toBe(true);
     expect(config.bodyLimit).toBe(10 * 1024 * 1024);
@@ -67,17 +67,17 @@ describe("loadConfig", () => {
 
   it("throws on non-ENOENT read errors", async () => {
     mockReadFile.mockRejectedValue(new Error("permission denied"));
-    await expect(loadConfig("/forbidden/config.json5", logger)).rejects.toThrow("permission denied");
+    await expect(loadConfig("/forbidden/config.json5", logger, "openai")).rejects.toThrow("permission denied");
   });
 
   it("throws on invalid JSON5", async () => {
     mockReadFile.mockResolvedValue("not valid json5 {{{{" as never);
-    await expect(loadConfig("/bad.json5", logger)).rejects.toThrow("Failed to parse config file");
+    await expect(loadConfig("/bad.json5", logger, "openai")).rejects.toThrow("Failed to parse config file");
   });
 
   it("throws when config is not an object", async () => {
     mockReadFile.mockResolvedValue('"just a string"' as never);
-    await expect(loadConfig("/str.json5", logger)).rejects.toThrow("Config file must contain a JSON5 object");
+    await expect(loadConfig("/str.json5", logger, "openai")).rejects.toThrow("Config file must contain a JSON5 object");
   });
 
   it("parses a valid config", async () => {
@@ -87,7 +87,7 @@ describe("loadConfig", () => {
       autoApprovePermissions: false,
     }) as never);
 
-    const config = await loadConfig("/valid/config.json5", logger);
+    const config = await loadConfig("/valid/config.json5", logger, "openai");
     expect(config.allowedCliTools).toEqual(["glob"]);
     expect(config.bodyLimit).toBe(5 * 1024 * 1024);
     expect(config.autoApprovePermissions).toBe(false);
@@ -95,16 +95,18 @@ describe("loadConfig", () => {
 
   it("resolves relative MCP server paths against config directory", async () => {
     mockReadFile.mockResolvedValue(JSON.stringify({
-      mcpServers: {
-        test: {
-          type: "local",
-          command: "node",
-          args: ["./server.js", "--flag"],
+      openai: {
+        mcpServers: {
+          test: {
+            type: "local",
+            command: "node",
+            args: ["./server.js", "--flag"],
+          },
         },
       },
     }) as never);
 
-    const config = await loadConfig("/project/config.json5", logger);
+    const config = await loadConfig("/project/config.json5", logger, "openai");
     expect(config.mcpServers.test).toBeDefined();
     const server = config.mcpServers.test!;
     if ("args" in server) {
@@ -113,11 +115,26 @@ describe("loadConfig", () => {
     }
   });
 
+  it("loads provider-specific MCP servers", async () => {
+    mockReadFile.mockResolvedValue(JSON.stringify({
+      openai: { mcpServers: { a: { type: "local", command: "node", args: [] } } },
+      claude: { mcpServers: { b: { type: "local", command: "python", args: [] } } },
+    }) as never);
+
+    const openaiConfig = await loadConfig("/project/config.json5", logger, "openai");
+    expect(openaiConfig.mcpServers.a).toBeDefined();
+    expect(openaiConfig.mcpServers.b).toBeUndefined();
+
+    const claudeConfig = await loadConfig("/project/config.json5", logger, "claude");
+    expect(claudeConfig.mcpServers.b).toBeDefined();
+    expect(claudeConfig.mcpServers.a).toBeUndefined();
+  });
+
   it("rejects invalid config schema", async () => {
     mockReadFile.mockResolvedValue(JSON.stringify({
       bodyLimit: -5,
     }) as never);
 
-    await expect(loadConfig("/invalid-schema.json5", logger)).rejects.toThrow("Invalid config");
+    await expect(loadConfig("/invalid-schema.json5", logger, "openai")).rejects.toThrow("Invalid config");
   });
 });

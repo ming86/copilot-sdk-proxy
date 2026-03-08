@@ -2,21 +2,19 @@
 // Edit this file to add MCP servers, control tool access, and set permissions.
 
 {
-  // MCP servers to connect to the Copilot SDK. Example:
-  // mcpServers: {
-  //   filesystem: {
-  //     type: "local",
-  //     command: "npx",
-  //     args: ["-y", "@modelcontextprotocol/server-filesystem", "/Users/me/projects"],
-  //   },
-  //   github: {
-  //     type: "http",
-  //     url: "https://api.githubcopilot.com/mcp",
-  //     headers: { Authorization: "Bearer ghp_xxx" },
-  //     timeout: 30, // seconds
+  // Per-provider MCP servers. Example:
+  // openai: {
+  //   mcpServers: {
+  //     filesystem: {
+  //       type: "local",
+  //       command: "npx",
+  //       args: ["-y", "@modelcontextprotocol/server-filesystem", "/Users/me/projects"],
+  //     },
   //   },
   // },
-  mcpServers: {},
+  openai: { mcpServers: {} },
+  claude: { mcpServers: {} },
+  codex: { mcpServers: {} },
 
   // Built-in Copilot CLI tools allowlist. Use ["*"] to allow all, [] to deny
   // all, or list specific tools like ["glob", "grep", "bash"].

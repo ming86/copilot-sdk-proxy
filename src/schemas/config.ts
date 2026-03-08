@@ -37,8 +37,19 @@ export type MCPServer = z.infer<typeof MCPServerSchema>;
 export type ApprovalRule = z.infer<typeof ApprovalRuleSchema>;
 export type ReasoningEffort = z.infer<typeof ReasoningEffortSchema>;
 
-export const ServerConfigSchema = z.object({
+export const ProviderConfigSchema = z.object({
   mcpServers: z.record(z.string(), MCPServerSchema).default({}),
+});
+
+export const PROVIDER_NAMES = ["openai", "claude", "codex"] as const;
+export type ProviderName = (typeof PROVIDER_NAMES)[number];
+
+const PROVIDER_DEFAULTS = { mcpServers: {} };
+
+export const ServerConfigSchema = z.object({
+  openai: ProviderConfigSchema.default(PROVIDER_DEFAULTS),
+  claude: ProviderConfigSchema.default(PROVIDER_DEFAULTS),
+  codex: ProviderConfigSchema.default(PROVIDER_DEFAULTS),
   allowedCliTools: z.array(z.string()).refine(
     (arr) => !arr.includes("*") || arr.length === 1,
     'allowedCliTools: use ["*"] alone to allow all tools, don\'t mix with other entries',

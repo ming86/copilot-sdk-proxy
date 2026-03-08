@@ -5,6 +5,7 @@ import JSON5 from "json5";
 import type { Logger } from "./logger.js";
 import {
   ServerConfigSchema,
+  type ProviderName,
   type MCPServer,
   type RawServerConfig,
 } from "./schemas/config.js";
@@ -15,9 +16,10 @@ export type {
   MCPServer,
   ApprovalRule,
   ReasoningEffort,
+  ProviderName,
 } from "./schemas/config.js";
 
-export type ServerConfig = Omit<RawServerConfig, "requestTimeout"> & {
+export type ServerConfig = Omit<RawServerConfig, ProviderName | "requestTimeout"> & {
   mcpServers: Record<string, MCPServer>;
   requestTimeoutMs: number;
 };
@@ -68,10 +70,15 @@ export function resolveConfigPath(
   return defaultPath;
 }
 
-export async function loadConfig(
+type ParsedConfig = {
+  data: RawServerConfig;
+  configDir: string;
+};
+
+async function parseConfigFile(
   configPath: string,
   logger: Logger,
-): Promise<ServerConfig> {
+): Promise<ParsedConfig | null> {
   const absolutePath = isAbsolute(configPath)
     ? configPath
     : resolve(process.cwd(), configPath);
@@ -82,7 +89,7 @@ export async function loadConfig(
   } catch (err: unknown) {
     if (err instanceof Error && "code" in err && (err as NodeJS.ErrnoException).code === "ENOENT") {
       logger.warn(`No config file at ${absolutePath}, using defaults`);
-      return DEFAULT_CONFIG;
+      return null;
     }
     throw err;
   }
@@ -113,16 +120,30 @@ export async function loadConfig(
     );
   }
 
-  const configDir = dirname(absolutePath);
-  const parsed = parseResult.data;
-  const config: ServerConfig = {
+  return { data: parseResult.data, configDir: dirname(absolutePath) };
+}
+
+function buildServerConfig(
+  parsed: RawServerConfig,
+  configDir: string,
+  provider: ProviderName,
+): ServerConfig {
+  return {
     allowedCliTools: parsed.allowedCliTools,
     autoApprovePermissions: parsed.autoApprovePermissions,
     reasoningEffort: parsed.reasoningEffort,
     bodyLimit: parsed.bodyLimit * BYTES_PER_MIB,
     requestTimeoutMs: parsed.requestTimeout * MS_PER_MINUTE,
-    mcpServers: resolveServerPaths(parsed.mcpServers, configDir),
+    mcpServers: resolveServerPaths(parsed[provider].mcpServers, configDir),
   };
+}
 
-  return config;
+export async function loadConfig(
+  configPath: string,
+  logger: Logger,
+  provider: ProviderName,
+): Promise<ServerConfig> {
+  const result = await parseConfigFile(configPath, logger);
+  if (!result) return DEFAULT_CONFIG;
+  return buildServerConfig(result.data, result.configDir, provider);
 }

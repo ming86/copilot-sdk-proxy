@@ -44,7 +44,7 @@ async function startServer(options: StartOptions): Promise<void> {
   const provider = providers[providerName];
 
   const configPath = options.config ?? resolveConfigPath(options.cwd, process.cwd(), DEFAULT_CONFIG_PATH);
-  const config = await loadConfig(configPath, logger);
+  const config = await loadConfig(configPath, logger, providerName);
   const cwd = options.cwd;
 
   const service = new CopilotService({
