@@ -1,6 +1,6 @@
 {
   "name": "copilot-sdk-proxy",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Generic proxy server translating OpenAI/Anthropic/Codex API requests into GitHub Copilot SDK sessions",
   "type": "module",
   "license": "MIT",
@@ -64,11 +64,11 @@
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
-    "@types/node": "25.3.5",
+    "@types/node": "25.5.0",
     "eslint": "10.0.3",
     "tsx": "4.21.0",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.56.1",
-    "vitest": "4.0.18"
+    "typescript-eslint": "8.57.0",
+    "vitest": "4.1.0"
   }
 }
