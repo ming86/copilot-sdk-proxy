@@ -1,10 +1,7 @@
 import type { FastifyRequest, FastifyReply } from "fastify";
 import { estimateTokenCount } from "tokenx";
 import type { AppContext } from "../../context.js";
-import {
-  AnthropicRequestSchema,
-  type AnthropicRequest,
-} from "./schemas.js";
+import { AnthropicRequestSchema, type AnthropicRequest } from "./schemas.js";
 import { sendAnthropicError } from "../shared/errors.js";
 
 // The token estimator needs a single string, so we pull all text out of
@@ -70,7 +67,12 @@ export function createCountTokensHandler({ logger }: AppContext) {
     const parseResult = AnthropicRequestSchema.safeParse(request.body);
     if (!parseResult.success) {
       const firstIssue = parseResult.error.issues[0];
-      sendAnthropicError(reply, 400, "invalid_request_error", firstIssue?.message ?? "Invalid request body");
+      sendAnthropicError(
+        reply,
+        400,
+        "invalid_request_error",
+        firstIssue?.message ?? "Invalid request body",
+      );
       return;
     }
 

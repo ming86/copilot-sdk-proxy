@@ -33,8 +33,12 @@ export function createSpinner(text: string): Spinner {
     process.stdout.write(`  ${dim("...")} ${text}\n`);
     return {
       update() {},
-      succeed(t: string) { process.stdout.write(`  ${symbols.success} ${t}\n`); },
-      fail(t: string) { process.stderr.write(`  ${symbols.error} ${t}\n`); },
+      succeed(t: string) {
+        process.stdout.write(`  ${symbols.success} ${t}\n`);
+      },
+      fail(t: string) {
+        process.stderr.write(`  ${symbols.error} ${t}\n`);
+      },
       stop() {},
     };
   }
@@ -62,10 +66,20 @@ export function createSpinner(text: string): Spinner {
   };
 
   return {
-    update(t: string) { current = t; },
-    succeed(t: string) { clear(); process.stdout.write(`  ${symbols.success} ${t}\n`); },
-    fail(t: string) { clear(); process.stderr.write(`  ${symbols.error} ${t}\n`); },
-    stop() { clear(); },
+    update(t: string) {
+      current = t;
+    },
+    succeed(t: string) {
+      clear();
+      process.stdout.write(`  ${symbols.success} ${t}\n`);
+    },
+    fail(t: string) {
+      clear();
+      process.stderr.write(`  ${symbols.error} ${t}\n`);
+    },
+    stop() {
+      clear();
+    },
   };
 }
 
@@ -78,9 +92,10 @@ export interface BannerInfo {
 }
 
 export function printBanner(info: BannerInfo): void {
-  const providerHint = info.provider === "auto"
-    ? dim("(default)")
-    : dim(`(--provider ${info.provider})`);
+  const providerHint =
+    info.provider === "auto"
+      ? dim("(default)")
+      : dim(`(--provider ${info.provider})`);
   console.log();
   console.log(`  ${dim("Provider")}   ${info.providerName} ${providerHint}`);
   console.log(`  ${dim("Routes")}     ${info.routes.join(dim(", "))}`);
@@ -105,10 +120,13 @@ const SECONDS_PER_HOUR = 3600;
 function formatDuration(ms: number): string {
   const totalSeconds = Math.floor(ms / MS_PER_SECOND);
   const hours = Math.floor(totalSeconds / SECONDS_PER_HOUR);
-  const minutes = Math.floor((totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE);
+  const minutes = Math.floor(
+    (totalSeconds % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE,
+  );
   const seconds = totalSeconds % SECONDS_PER_MINUTE;
 
-  if (hours > 0) return `${String(hours)}h ${String(minutes)}m ${String(seconds)}s`;
+  if (hours > 0)
+    return `${String(hours)}h ${String(minutes)}m ${String(seconds)}s`;
   if (minutes > 0) return `${String(minutes)}m ${String(seconds)}s`;
   return `${String(seconds)}s`;
 }
@@ -136,13 +154,16 @@ export function printUsageSummary(snap: StatsSnapshot): void {
     console.log(`  ${dim("Tokens")}       ${tokenParts.join(dim(" │ "))}`);
   }
   if (snap.totalCost > 0) {
-    const cost = snap.totalCost < 0.01
-      ? `$${snap.totalCost.toFixed(4)}`
-      : `$${snap.totalCost.toFixed(2)}`;
+    const cost =
+      snap.totalCost < 0.01
+        ? `$${snap.totalCost.toFixed(4)}`
+        : `$${snap.totalCost.toFixed(2)}`;
     console.log(`  ${dim("Cost")}         ${cost}`);
   }
   if (snap.apiDurationMs > 0) {
-    console.log(`  ${dim("API time")}     ${formatDuration(snap.apiDurationMs)}`);
+    console.log(
+      `  ${dim("API time")}     ${formatDuration(snap.apiDurationMs)}`,
+    );
   }
   console.log(`  ${dim("Uptime")}       ${formatDuration(snap.uptimeMs)}`);
 
@@ -151,12 +172,16 @@ export function printUsageSummary(snap: StatsSnapshot): void {
     console.log();
     console.log(`  ${dim("By model:")}`);
     for (const [model, m] of models) {
-      const parts = [`${formatNumber(m.requests)} call${m.requests !== 1 ? "s" : ""}`];
+      const parts = [
+        `${formatNumber(m.requests)} call${m.requests !== 1 ? "s" : ""}`,
+      ];
       parts.push(`${formatTokens(m.inputTokens)} in`);
       parts.push(`${formatTokens(m.outputTokens)} out`);
-      if (m.cacheReadTokens > 0) parts.push(`${formatTokens(m.cacheReadTokens)} cached`);
+      if (m.cacheReadTokens > 0)
+        parts.push(`${formatTokens(m.cacheReadTokens)} cached`);
       if (m.cost > 0) {
-        const c = m.cost < 0.01 ? `$${m.cost.toFixed(4)}` : `$${m.cost.toFixed(2)}`;
+        const c =
+          m.cost < 0.01 ? `$${m.cost.toFixed(4)}` : `$${m.cost.toFixed(2)}`;
         parts.push(c);
       }
       console.log(`  ${dim("  " + model)}  ${parts.join(dim(" │ "))}`);

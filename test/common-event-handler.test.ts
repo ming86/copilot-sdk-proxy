@@ -5,7 +5,11 @@ import type { StreamProtocol } from "../src/providers/shared/streaming-core.js";
 import { Stats } from "../src/stats.js";
 import { Logger } from "../src/logger.js";
 
-const BASE = { id: "e1", timestamp: new Date().toISOString(), parentId: null } as const;
+const BASE = {
+  id: "e1",
+  timestamp: new Date().toISOString(),
+  parentId: null,
+} as const;
 
 function makeEvent<T extends SessionEvent["type"]>(
   type: T,
@@ -20,8 +24,12 @@ function setup() {
   const reply = {} as never;
 
   const protocol: StreamProtocol = {
-    flushDeltas(_r, deltas) { written.push([...deltas]); },
-    flushReasoningDeltas(_r, deltas) { reasoningWritten.push([...deltas]); },
+    flushDeltas(_r, deltas) {
+      written.push([...deltas]);
+    },
+    flushReasoningDeltas(_r, deltas) {
+      reasoningWritten.push([...deltas]);
+    },
     reasoningComplete: vi.fn(),
     sendCompleted: vi.fn(),
     sendFailed: vi.fn(),
@@ -30,7 +38,12 @@ function setup() {
 
   const logger = new Logger("error");
   const stats = new Stats();
-  const handler = createCommonEventHandler(protocol, () => reply, logger, stats);
+  const handler = createCommonEventHandler(
+    protocol,
+    () => reply,
+    logger,
+    stats,
+  );
 
   return { handler, protocol, written, reasoningWritten, stats };
 }
@@ -39,7 +52,12 @@ describe("createCommonEventHandler", () => {
   it("handles message_delta and tracks deltaCount", () => {
     const { handler } = setup();
 
-    const handled = handler.handle(makeEvent("assistant.message_delta", { messageId: "m1", deltaContent: "hi" }));
+    const handled = handler.handle(
+      makeEvent("assistant.message_delta", {
+        messageId: "m1",
+        deltaContent: "hi",
+      }),
+    );
 
     expect(handled).toBe(true);
     expect(handler.deltaCount).toBe(1);
@@ -48,8 +66,18 @@ describe("createCommonEventHandler", () => {
   it("accumulates and flushes text deltas", () => {
     const { handler, written } = setup();
 
-    handler.handle(makeEvent("assistant.message_delta", { messageId: "m1", deltaContent: "a" }));
-    handler.handle(makeEvent("assistant.message_delta", { messageId: "m1", deltaContent: "b" }));
+    handler.handle(
+      makeEvent("assistant.message_delta", {
+        messageId: "m1",
+        deltaContent: "a",
+      }),
+    );
+    handler.handle(
+      makeEvent("assistant.message_delta", {
+        messageId: "m1",
+        deltaContent: "b",
+      }),
+    );
     handler.flushDeltas();
 
     expect(written).toEqual([["a", "b"]]);
@@ -67,7 +95,12 @@ describe("createCommonEventHandler", () => {
   it("accumulates and flushes reasoning deltas", () => {
     const { handler, reasoningWritten } = setup();
 
-    handler.handle(makeEvent("assistant.reasoning_delta", { reasoningId: "r1", deltaContent: "think" }));
+    handler.handle(
+      makeEvent("assistant.reasoning_delta", {
+        reasoningId: "r1",
+        deltaContent: "think",
+      }),
+    );
     handler.flushReasoningDeltas();
 
     expect(reasoningWritten).toEqual([["think"]]);
@@ -77,18 +110,34 @@ describe("createCommonEventHandler", () => {
     let called = false;
     const written: string[][] = [];
     const protocol: StreamProtocol = {
-      flushDeltas(_r, deltas) { written.push([...deltas]); },
+      flushDeltas(_r, deltas) {
+        written.push([...deltas]);
+      },
       flushReasoningDeltas: vi.fn(),
-      reasoningComplete() { called = true; },
+      reasoningComplete() {
+        called = true;
+      },
       sendCompleted: vi.fn(),
       sendFailed: vi.fn(),
       teardown: vi.fn(),
     };
     const reply = {} as never;
-    const handler = createCommonEventHandler(protocol, () => reply, new Logger("error"), new Stats());
+    const handler = createCommonEventHandler(
+      protocol,
+      () => reply,
+      new Logger("error"),
+      new Stats(),
+    );
 
-    handler.handle(makeEvent("assistant.reasoning_delta", { reasoningId: "r1", deltaContent: "hmm" }));
-    handler.handle(makeEvent("assistant.reasoning", { reasoningId: "r1", content: "hmm" }));
+    handler.handle(
+      makeEvent("assistant.reasoning_delta", {
+        reasoningId: "r1",
+        deltaContent: "hmm",
+      }),
+    );
+    handler.handle(
+      makeEvent("assistant.reasoning", { reasoningId: "r1", content: "hmm" }),
+    );
 
     expect(called).toBe(true);
   });
@@ -96,17 +145,21 @@ describe("createCommonEventHandler", () => {
   it("handles tool execution start and complete", () => {
     const { handler } = setup();
 
-    const start = handler.handle(makeEvent("tool.execution_start", {
-      toolCallId: "tc1",
-      toolName: "read_file",
-      arguments: { path: "/foo" },
-    }));
+    const start = handler.handle(
+      makeEvent("tool.execution_start", {
+        toolCallId: "tc1",
+        toolName: "read_file",
+        arguments: { path: "/foo" },
+      }),
+    );
 
-    const complete = handler.handle(makeEvent("tool.execution_complete", {
-      toolCallId: "tc1",
-      success: true,
-      result: { content: "file contents" },
-    }));
+    const complete = handler.handle(
+      makeEvent("tool.execution_complete", {
+        toolCallId: "tc1",
+        success: true,
+        result: { content: "file contents" },
+      }),
+    );
 
     expect(start).toBe(true);
     expect(complete).toBe(true);
@@ -115,22 +168,30 @@ describe("createCommonEventHandler", () => {
   it("handles compaction events", () => {
     const { handler } = setup();
 
-    expect(handler.handle(makeEvent("session.compaction_start", {}))).toBe(true);
-    expect(handler.handle(makeEvent("session.compaction_complete", {
-      success: true,
-      preCompactionTokens: 1000,
-      postCompactionTokens: 500,
-    }))).toBe(true);
+    expect(handler.handle(makeEvent("session.compaction_start", {}))).toBe(
+      true,
+    );
+    expect(
+      handler.handle(
+        makeEvent("session.compaction_complete", {
+          success: true,
+          preCompactionTokens: 1000,
+          postCompactionTokens: 500,
+        }),
+      ),
+    ).toBe(true);
   });
 
   it("handles usage events and records stats", () => {
     const { handler, stats } = setup();
 
-    const handled = handler.handle(makeEvent("assistant.usage", {
-      inputTokens: 100,
-      outputTokens: 50,
-      model: "gpt-4o",
-    }));
+    const handled = handler.handle(
+      makeEvent("assistant.usage", {
+        inputTokens: 100,
+        outputTokens: 50,
+        model: "gpt-4o",
+      }),
+    );
 
     expect(handled).toBe(true);
     const snapshot = stats.snapshot();
@@ -149,7 +210,12 @@ describe("createCommonEventHandler", () => {
   it("skips empty deltaContent", () => {
     const { handler, written } = setup();
 
-    handler.handle(makeEvent("assistant.message_delta", { messageId: "m1", deltaContent: "" }));
+    handler.handle(
+      makeEvent("assistant.message_delta", {
+        messageId: "m1",
+        deltaContent: "",
+      }),
+    );
     handler.flushDeltas();
 
     expect(handler.deltaCount).toBe(0);
@@ -159,14 +225,26 @@ describe("createCommonEventHandler", () => {
   it("does not flush when reply is null", () => {
     let flushed = false;
     const protocol: StreamProtocol = {
-      flushDeltas() { flushed = true; },
+      flushDeltas() {
+        flushed = true;
+      },
       sendCompleted: vi.fn(),
       sendFailed: vi.fn(),
       teardown: vi.fn(),
     };
-    const handler = createCommonEventHandler(protocol, () => null, new Logger("error"), new Stats());
+    const handler = createCommonEventHandler(
+      protocol,
+      () => null,
+      new Logger("error"),
+      new Stats(),
+    );
 
-    handler.handle(makeEvent("assistant.message_delta", { messageId: "m1", deltaContent: "data" }));
+    handler.handle(
+      makeEvent("assistant.message_delta", {
+        messageId: "m1",
+        deltaContent: "data",
+      }),
+    );
     handler.flushDeltas();
 
     expect(flushed).toBe(false);

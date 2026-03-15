@@ -53,7 +53,9 @@ export function createCommonEventHandler(
       case "tool.execution_start": {
         const d = event.data;
         toolNames.set(d.toolCallId, d.toolName);
-        logger.debug(`Running ${d.toolName} (id=${d.toolCallId}, args=${JSON.stringify(d.arguments)})`);
+        logger.debug(
+          `Running ${d.toolName} (id=${d.toolCallId}, args=${JSON.stringify(d.arguments)})`,
+        );
         return true;
       }
 
@@ -63,7 +65,7 @@ export function createCommonEventHandler(
         toolNames.delete(d.toolCallId);
         const detail = d.success
           ? JSON.stringify(d.result?.content)
-          : d.error?.message ?? "failed";
+          : (d.error?.message ?? "failed");
         logger.debug(`${name} done (success=${String(d.success)}, ${detail})`);
         return true;
       }
@@ -109,7 +111,9 @@ export function createCommonEventHandler(
     handle,
     flushDeltas,
     flushReasoningDeltas,
-    get deltaCount() { return deltaCount; },
+    get deltaCount() {
+      return deltaCount;
+    },
   };
 }
 
@@ -135,7 +139,9 @@ export function runSessionStreaming(
         break;
 
       case "session.idle":
-        logger.info(`Done, wrapping up stream (${String(common.deltaCount)} deltas received)`);
+        logger.info(
+          `Done, wrapping up stream (${String(common.deltaCount)} deltas received)`,
+        );
         sessionDone = true;
         common.flushDeltas();
         protocol.sendCompleted(reply);
@@ -156,7 +162,9 @@ export function runSessionStreaming(
         break;
 
       default:
-        logger.debug(`Unhandled event: ${event.type}, data=${JSON.stringify(event.data)}`);
+        logger.debug(
+          `Unhandled event: ${event.type}, data=${JSON.stringify(event.data)}`,
+        );
         break;
     }
   });

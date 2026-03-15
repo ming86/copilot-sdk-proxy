@@ -198,13 +198,22 @@ describe("formatAnthropicPrompt", () => {
       {
         role: "assistant",
         content: [
-          { type: "tool_use", id: "toolu_01", name: "search", input: { q: "bug" } },
+          {
+            type: "tool_use",
+            id: "toolu_01",
+            name: "search",
+            input: { q: "bug" },
+          },
         ],
       },
       {
         role: "user",
         content: [
-          { type: "tool_result", tool_use_id: "toolu_01", content: "Found 3 bugs" },
+          {
+            type: "tool_result",
+            tool_use_id: "toolu_01",
+            content: "Found 3 bugs",
+          },
         ],
       },
       { role: "assistant", content: "I found 3 bugs." },

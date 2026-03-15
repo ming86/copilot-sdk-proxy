@@ -30,7 +30,9 @@ export class CopilotService {
       logLevel: options.logLevel ?? "error",
       cwd: this.cwd,
       env: Object.fromEntries(
-        Object.entries(process.env).filter((e): e is [string, string] => e[1] != null),
+        Object.entries(process.env).filter(
+          (e): e is [string, string] => e[1] != null,
+        ),
       ),
       ...(options.githubToken && {
         githubToken: options.githubToken,
@@ -51,12 +53,17 @@ export class CopilotService {
     return this.client.getAuthStatus();
   }
 
-  async ping(message?: string): Promise<{ message: string; timestamp: number; protocolVersion?: number }> {
+  async ping(
+    message?: string,
+  ): Promise<{ message: string; timestamp: number; protocolVersion?: number }> {
     return this.client.ping(message);
   }
 
   async listModels(): Promise<ModelInfo[]> {
-    if (this.cachedModels && Date.now() - this.cachedModelsAt < MODEL_CACHE_TTL_MS) {
+    if (
+      this.cachedModels &&
+      Date.now() - this.cachedModelsAt < MODEL_CACHE_TTL_MS
+    ) {
       return this.cachedModels;
     }
     const models = await this.client.listModels();

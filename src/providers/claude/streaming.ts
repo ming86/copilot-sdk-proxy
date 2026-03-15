@@ -3,7 +3,10 @@ import type { FastifyReply } from "fastify";
 import type { CopilotSession } from "@github/copilot-sdk";
 import type { Logger } from "../../logger.js";
 import type { Stats } from "../../stats.js";
-import { SSE_HEADERS, sendSSEEvent as sendEvent } from "../shared/streaming-utils.js";
+import {
+  SSE_HEADERS,
+  sendSSEEvent as sendEvent,
+} from "../shared/streaming-utils.js";
 import type {
   MessageStartEvent,
   ContentBlockStartEvent,
@@ -106,7 +109,9 @@ export class AnthropicProtocol implements StreamProtocol {
       usage: { output_tokens: 0 },
     };
     sendEvent(r, "message_delta", messageDelta);
-    sendEvent(r, "message_stop", { type: "message_stop" } satisfies MessageStopEvent);
+    sendEvent(r, "message_stop", {
+      type: "message_stop",
+    } satisfies MessageStopEvent);
   }
 
   flushReasoningDeltas(r: FastifyReply, deltas: string[]): void {

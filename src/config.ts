@@ -22,7 +22,10 @@ export type {
 
 export type { ProviderMode } from "./schemas/config.js";
 
-export type ServerConfig = Omit<RawServerConfig, ProviderName | "requestTimeout"> & {
+export type ServerConfig = Omit<
+  RawServerConfig,
+  ProviderName | "requestTimeout"
+> & {
   mcpServers: Record<string, MCPServer>;
   requestTimeoutMs: number;
 };
@@ -90,7 +93,11 @@ async function parseConfigFile(
   try {
     text = await readFile(absolutePath, "utf-8");
   } catch (err: unknown) {
-    if (err instanceof Error && "code" in err && (err as NodeJS.ErrnoException).code === "ENOENT") {
+    if (
+      err instanceof Error &&
+      "code" in err &&
+      (err as NodeJS.ErrnoException).code === "ENOENT"
+    ) {
       logger.warn(`No config file at ${absolutePath}, using defaults`);
       return null;
     }
@@ -119,7 +126,7 @@ async function parseConfigFile(
     }
     const path = firstError.path.join(".");
     throw new Error(
-      `Invalid config${path ? ` at "${path}"` : ""}: ${firstError.message}`
+      `Invalid config${path ? ` at "${path}"` : ""}: ${firstError.message}`,
     );
   }
 
@@ -164,14 +171,19 @@ export async function loadAllProviderConfigs(
   const providers = Object.fromEntries(
     PROVIDER_NAMES.map((name) => [
       name,
-      result ? buildServerConfig(result.data, result.configDir, name) : DEFAULT_CONFIG,
+      result
+        ? buildServerConfig(result.data, result.configDir, name)
+        : DEFAULT_CONFIG,
     ]),
   ) as Record<ProviderName, ServerConfig>;
 
   // Reuse buildServerConfig for shared fields, override mcpServers to empty.
   // The provider arg is arbitrary since shared fields are provider-independent.
   const shared: ServerConfig = result
-    ? { ...buildServerConfig(result.data, result.configDir, "openai"), mcpServers: {} }
+    ? {
+        ...buildServerConfig(result.data, result.configDir, "openai"),
+        mcpServers: {},
+      }
     : DEFAULT_CONFIG;
 
   return { providers, shared };

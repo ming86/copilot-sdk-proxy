@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { parsePort, parseLogLevel, parseProvider, parseIdleTimeout, isProviderName } from "../src/cli-validators.js";
+import {
+  parsePort,
+  parseLogLevel,
+  parseProvider,
+  parseIdleTimeout,
+  isProviderName,
+} from "../src/cli-validators.js";
 
 describe("parsePort", () => {
   it("parses a valid port", () => {
@@ -48,7 +54,9 @@ describe("parseLogLevel", () => {
   );
 
   it("throws on invalid level", () => {
-    expect(() => parseLogLevel("verbose")).toThrow('Invalid log level "verbose"');
+    expect(() => parseLogLevel("verbose")).toThrow(
+      'Invalid log level "verbose"',
+    );
   });
 
   it("throws on empty string", () => {
@@ -74,12 +82,9 @@ describe("isProviderName", () => {
 });
 
 describe("parseProvider", () => {
-  it.each(["openai", "claude", "codex"] as const)(
-    "accepts %s",
-    (name) => {
-      expect(parseProvider(name)).toBe(name);
-    },
-  );
+  it.each(["openai", "claude", "codex"] as const)("accepts %s", (name) => {
+    expect(parseProvider(name)).toBe(name);
+  });
 
   it("throws on invalid provider", () => {
     expect(() => parseProvider("gemini")).toThrow('Invalid provider "gemini"');

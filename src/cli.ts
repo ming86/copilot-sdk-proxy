@@ -4,7 +4,11 @@ import { readFile } from "node:fs/promises";
 import { z } from "zod";
 import { Command } from "commander";
 import { CopilotService } from "./copilot-service.js";
-import { loadConfig, loadAllProviderConfigs, resolveConfigPath } from "./config.js";
+import {
+  loadConfig,
+  loadAllProviderConfigs,
+  resolveConfigPath,
+} from "./config.js";
 import type { AllProviderConfigs, ServerConfig } from "./config.js";
 import { createServer } from "./server.js";
 import { Logger } from "./logger.js";
@@ -19,14 +23,22 @@ import {
   parseProvider,
   parseIdleTimeout,
 } from "./cli-validators.js";
-import { bold, dim, createSpinner, printBanner, printUsageSummary } from "./ui.js";
+import {
+  bold,
+  dim,
+  createSpinner,
+  printBanner,
+  printUsageSummary,
+} from "./ui.js";
 
 const PACKAGE_ROOT = dirname(import.meta.dirname);
 const DEFAULT_CONFIG_PATH = join(PACKAGE_ROOT, "config.json5");
 
-const { version } = z.object({ version: z.string() }).parse(
-  JSON.parse(await readFile(join(PACKAGE_ROOT, "package.json"), "utf-8")),
-);
+const { version } = z
+  .object({ version: z.string() })
+  .parse(
+    JSON.parse(await readFile(join(PACKAGE_ROOT, "package.json"), "utf-8")),
+  );
 
 interface StartOptions {
   port: string;
@@ -41,10 +53,18 @@ async function loadProvider(
   mode: ProviderMode,
   configPath: string,
   logger: Logger,
-): Promise<{ provider: Provider; config: ServerConfig; allConfigs?: AllProviderConfigs }> {
+): Promise<{
+  provider: Provider;
+  config: ServerConfig;
+  allConfigs?: AllProviderConfigs;
+}> {
   if (mode === "auto") {
     const allConfigs = await loadAllProviderConfigs(configPath, logger);
-    return { provider: createAutoProvider(allConfigs.providers), config: allConfigs.shared, allConfigs };
+    return {
+      provider: createAutoProvider(allConfigs.providers),
+      config: allConfigs.shared,
+      allConfigs,
+    };
   }
   const config = await loadConfig(configPath, logger, mode);
   return { provider: providers[mode], config };
@@ -54,11 +74,21 @@ async function startServer(options: StartOptions): Promise<void> {
   const logLevel = parseLogLevel(options.logLevel);
   const logger = new Logger(logLevel);
   const port = parsePort(options.port);
-  const mode: ProviderMode = options.provider ? parseProvider(options.provider) : "auto";
-  const idleTimeoutMinutes = options.idleTimeout ? parseIdleTimeout(options.idleTimeout) : 0;
+  const mode: ProviderMode = options.provider
+    ? parseProvider(options.provider)
+    : "auto";
+  const idleTimeoutMinutes = options.idleTimeout
+    ? parseIdleTimeout(options.idleTimeout)
+    : 0;
 
-  const configPath = options.config ?? resolveConfigPath(options.cwd, process.cwd(), DEFAULT_CONFIG_PATH);
-  const { provider, config, allConfigs } = await loadProvider(mode, configPath, logger);
+  const configPath =
+    options.config ??
+    resolveConfigPath(options.cwd, process.cwd(), DEFAULT_CONFIG_PATH);
+  const { provider, config, allConfigs } = await loadProvider(
+    mode,
+    configPath,
+    logger,
+  );
   const cwd = options.cwd;
 
   const service = new CopilotService({
@@ -75,7 +105,9 @@ async function startServer(options: StartOptions): Promise<void> {
     console.log();
   }
 
-  const bootSpinner = quiet ? null : createSpinner("Initialising Copilot SDK...");
+  const bootSpinner = quiet
+    ? null
+    : createSpinner("Initialising Copilot SDK...");
   await service.start();
   bootSpinner?.succeed("Copilot SDK initialised");
 
@@ -91,7 +123,9 @@ async function startServer(options: StartOptions): Promise<void> {
   }
   const login = auth.login ?? "unknown";
   const authType = auth.authType ?? "unknown";
-  authSpinner?.succeed(`Authenticated as ${bold(login)} ${dim(`(${authType})`)}`);
+  authSpinner?.succeed(
+    `Authenticated as ${bold(login)} ${dim(`(${authType})`)}`,
+  );
 
   const stats = new Stats();
   const ctx: AppContext = { service, logger, config, port, stats };
@@ -102,12 +136,16 @@ async function startServer(options: StartOptions): Promise<void> {
     lastActivity = Date.now();
   });
 
-  const listenSpinner = quiet ? null : createSpinner(`Starting server on port ${String(port)}...`);
+  const listenSpinner = quiet
+    ? null
+    : createSpinner(`Starting server on port ${String(port)}...`);
   const prevPinoLevel = app.log.level;
   app.log.level = "silent";
   await app.listen({ port, host: "127.0.0.1" });
   app.log.level = prevPinoLevel;
-  listenSpinner?.succeed(`Listening on ${bold(`http://localhost:${String(port)}`)}`);
+  listenSpinner?.succeed(
+    `Listening on ${bold(`http://localhost:${String(port)}`)}`,
+  );
 
   if (!quiet) {
     printBanner({
@@ -121,7 +159,10 @@ async function startServer(options: StartOptions): Promise<void> {
 
   logger.debug(`Config loaded from ${configPath}`);
   const mcpCount = allConfigs
-    ? Object.values(allConfigs.providers).reduce((sum, c) => sum + Object.keys(c.mcpServers).length, 0)
+    ? Object.values(allConfigs.providers).reduce(
+        (sum, c) => sum + Object.keys(c.mcpServers).length,
+        0,
+      )
     : Object.keys(config.mcpServers).length;
   const cliToolsSummary = config.allowedCliTools.includes("*")
     ? "all CLI tools allowed"
@@ -165,8 +206,12 @@ async function startServer(options: StartOptions): Promise<void> {
       process.exit(1);
     });
   };
-  process.on("SIGINT", () => { onSignal("SIGINT"); });
-  process.on("SIGTERM", () => { onSignal("SIGTERM"); });
+  process.on("SIGINT", () => {
+    onSignal("SIGINT");
+  });
+  process.on("SIGTERM", () => {
+    onSignal("SIGTERM");
+  });
 
   if (idleTimeoutMinutes > 0) {
     const idleMs = idleTimeoutMinutes * 60_000;
@@ -174,7 +219,9 @@ async function startServer(options: StartOptions): Promise<void> {
     const timer = setInterval(() => {
       if (Date.now() - lastActivity >= idleMs) {
         clearInterval(timer);
-        logger.info(`Idle for ${String(idleTimeoutMinutes)} minute(s), shutting down`);
+        logger.info(
+          `Idle for ${String(idleTimeoutMinutes)} minute(s), shutting down`,
+        );
         onSignal("idle-timeout");
       }
     }, checkInterval);
@@ -184,7 +231,9 @@ async function startServer(options: StartOptions): Promise<void> {
 
 const program = new Command()
   .name("copilot-proxy")
-  .description("Generic proxy server translating API requests into GitHub Copilot SDK sessions")
+  .description(
+    "Generic proxy server translating API requests into GitHub Copilot SDK sessions",
+  )
   .version(version, "-v, --version");
 
 program
@@ -195,7 +244,11 @@ program
   .option("-l, --log-level <level>", "log verbosity", "info")
   .option("-c, --config <path>", "path to config file")
   .option("--cwd <path>", "working directory for Copilot sessions")
-  .option("--idle-timeout <minutes>", "shut down after N minutes of inactivity", "0")
+  .option(
+    "--idle-timeout <minutes>",
+    "shut down after N minutes of inactivity",
+    "0",
+  )
   .action((options: StartOptions) => startServer(options));
 
 program.parseAsync().catch((err: unknown) => {

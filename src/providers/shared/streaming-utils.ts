@@ -16,7 +16,11 @@ export function sendSSEEvent(
   sequenceNumber?: number,
 ): void {
   if (sequenceNumber != null) {
-    const payload = { ...(data as Record<string, unknown>), type, sequence_number: sequenceNumber };
+    const payload = {
+      ...(data as Record<string, unknown>),
+      type,
+      sequence_number: sequenceNumber,
+    };
     reply.raw.write(`event: ${type}\ndata: ${JSON.stringify(payload)}\n\n`);
   } else {
     reply.raw.write(`event: ${type}\ndata: ${JSON.stringify(data)}\n\n`);
@@ -27,9 +31,15 @@ export function sendSSEComment(reply: FastifyReply): void {
   reply.raw.write(": keepalive\n\n");
 }
 
-export function recordUsageEvent(stats: Stats, logger: Logger, data: UsageData): void {
+export function recordUsageEvent(
+  stats: Stats,
+  logger: Logger,
+  data: UsageData,
+): void {
   stats.recordUsage(data);
-  logger.debug(`Usage: ${String(data.inputTokens ?? 0)} in, ${String(data.outputTokens ?? 0)} out, cost=${String(data.cost ?? 0)}`);
+  logger.debug(
+    `Usage: ${String(data.inputTokens ?? 0)} in, ${String(data.outputTokens ?? 0)} out, cost=${String(data.cost ?? 0)}`,
+  );
 }
 
 const MS_PER_SECOND = 1000;

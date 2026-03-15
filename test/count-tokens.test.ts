@@ -56,7 +56,9 @@ describe("createCountTokensHandler", () => {
       reply,
     );
     expect(sent.body).toHaveProperty("input_tokens");
-    expect((sent.body as { input_tokens: number }).input_tokens).toBeGreaterThan(0);
+    expect(
+      (sent.body as { input_tokens: number }).input_tokens,
+    ).toBeGreaterThan(0);
   });
 
   it("counts tokens with system message", () => {
@@ -97,7 +99,9 @@ describe("createCountTokensHandler", () => {
       } as never,
       reply,
     );
-    expect((sent.body as { input_tokens: number }).input_tokens).toBeGreaterThan(0);
+    expect(
+      (sent.body as { input_tokens: number }).input_tokens,
+    ).toBeGreaterThan(0);
   });
 
   it("counts tokens with structured content blocks", () => {
@@ -117,7 +121,12 @@ describe("createCountTokensHandler", () => {
               role: "assistant",
               content: [
                 { type: "text", text: "I'll help." },
-                { type: "tool_use", id: "t1", name: "bash", input: { cmd: "ls" } },
+                {
+                  type: "tool_use",
+                  id: "t1",
+                  name: "bash",
+                  input: { cmd: "ls" },
+                },
               ],
             },
             {
@@ -131,7 +140,9 @@ describe("createCountTokensHandler", () => {
       } as never,
       reply,
     );
-    expect((sent.body as { input_tokens: number }).input_tokens).toBeGreaterThan(0);
+    expect(
+      (sent.body as { input_tokens: number }).input_tokens,
+    ).toBeGreaterThan(0);
   });
 
   it("handles system as array of text blocks", () => {
@@ -148,6 +159,8 @@ describe("createCountTokensHandler", () => {
       } as never,
       reply,
     );
-    expect((sent.body as { input_tokens: number }).input_tokens).toBeGreaterThan(0);
+    expect(
+      (sent.body as { input_tokens: number }).input_tokens,
+    ).toBeGreaterThan(0);
   });
 });

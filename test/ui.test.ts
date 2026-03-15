@@ -1,5 +1,19 @@
-import { describe, it, expect, vi, beforeEach, afterEach, type MockInstance } from "vitest";
-import { createSpinner, printBanner, printUsageSummary, symbols, type BannerInfo } from "../src/ui.js";
+import {
+  describe,
+  it,
+  expect,
+  vi,
+  beforeEach,
+  afterEach,
+  type MockInstance,
+} from "vitest";
+import {
+  createSpinner,
+  printBanner,
+  printUsageSummary,
+  symbols,
+  type BannerInfo,
+} from "../src/ui.js";
 import type { StatsSnapshot } from "../src/stats.js";
 
 // eslint-disable-next-line no-control-regex
@@ -23,7 +37,9 @@ describe("createSpinner", () => {
 
   beforeEach(() => {
     writeSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
-    writeErrSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
+    writeErrSpy = vi
+      .spyOn(process.stderr, "write")
+      .mockImplementation(() => true);
     originalIsTTY = process.stdout.isTTY;
   });
 
@@ -105,7 +121,9 @@ describe("createSpinner", () => {
       const spinner = createSpinner("Loading...");
       writeSpy.mockClear();
       spinner.stop();
-      const output = writeSpy.mock.calls.map((c: unknown[]) => strip(String(c[0]))).join("");
+      const output = writeSpy.mock.calls
+        .map((c: unknown[]) => strip(String(c[0])))
+        .join("");
       expect(output).not.toContain("✓");
       expect(output).not.toContain("✗");
     });
@@ -133,7 +151,9 @@ describe("printBanner", () => {
 
   it("prints provider, routes, and directory", () => {
     printBanner(info);
-    const output = logSpy.mock.calls.map((c: unknown[]) => strip(String(c[0]))).join("\n");
+    const output = logSpy.mock.calls
+      .map((c: unknown[]) => strip(String(c[0])))
+      .join("\n");
     expect(output).toContain("OpenAI");
     expect(output).toContain("--provider openai");
     expect(output).toContain("GET /v1/models");
@@ -210,7 +230,7 @@ describe("printUsageSummary", () => {
   });
 
   it("prints cost when present", () => {
-    printUsageSummary({ ...baseSnap, totalCost: 1.50 });
+    printUsageSummary({ ...baseSnap, totalCost: 1.5 });
     const output = allOutput();
     expect(output).toContain("$1.50");
   });
@@ -258,7 +278,7 @@ describe("printUsageSummary", () => {
       modelMetrics: {
         "gpt-4": {
           requests: 10,
-          cost: 0.50,
+          cost: 0.5,
           inputTokens: 5000,
           outputTokens: 2000,
           cacheReadTokens: 0,

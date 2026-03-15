@@ -43,9 +43,7 @@ function formatBlocks(
 
 // The Copilot SDK expects a single flat prompt string, so we convert the
 // structured Anthropic messages into that format.
-export function formatAnthropicPrompt(
-  messages: AnthropicMessage[],
-): string {
+export function formatAnthropicPrompt(messages: AnthropicMessage[]): string {
   const parts: string[] = [];
 
   for (const msg of messages) {

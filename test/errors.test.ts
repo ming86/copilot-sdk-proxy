@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { sendOpenAIError, sendAnthropicError } from "../src/providers/shared/errors.js";
+import {
+  sendOpenAIError,
+  sendAnthropicError,
+} from "../src/providers/shared/errors.js";
 
 function mockReply() {
   const sent: { status?: number; body?: unknown } = {};
@@ -22,14 +25,18 @@ describe("sendOpenAIError", () => {
     const { reply, sent } = mockReply();
     sendOpenAIError(reply, 400, "invalid_request_error", "Bad request");
     expect(sent.status).toBe(400);
-    expect(sent.body).toEqual({ error: { message: "Bad request", type: "invalid_request_error" } });
+    expect(sent.body).toEqual({
+      error: { message: "Bad request", type: "invalid_request_error" },
+    });
   });
 
   it("sends 500 api_error", () => {
     const { reply, sent } = mockReply();
     sendOpenAIError(reply, 500, "api_error", "Server error");
     expect(sent.status).toBe(500);
-    expect(sent.body).toEqual({ error: { message: "Server error", type: "api_error" } });
+    expect(sent.body).toEqual({
+      error: { message: "Server error", type: "api_error" },
+    });
   });
 });
 

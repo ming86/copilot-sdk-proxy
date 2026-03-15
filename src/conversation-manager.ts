@@ -45,7 +45,9 @@ export class DefaultConversationManager implements ConversationManager {
       this.primaryId = id;
     }
 
-    this.logger.debug(`Created conversation ${id} (primary=${String(isPrimary)}, active: ${String(this.conversations.size)})`);
+    this.logger.debug(
+      `Created conversation ${id} (primary=${String(isPrimary)}, active: ${String(this.conversations.size)})`,
+    );
     return conversation;
   }
 
@@ -57,7 +59,9 @@ export class DefaultConversationManager implements ConversationManager {
   clearPrimary(): void {
     if (this.primaryId) {
       this.conversations.delete(this.primaryId);
-      this.logger.debug(`Cleared primary conversation ${this.primaryId} (active: ${String(this.conversations.size)})`);
+      this.logger.debug(
+        `Cleared primary conversation ${this.primaryId} (active: ${String(this.conversations.size)})`,
+      );
       this.primaryId = null;
     }
   }
@@ -68,14 +72,18 @@ export class DefaultConversationManager implements ConversationManager {
     for (const [id, conv] of this.conversations) {
       if (!conv.isPrimary && !conv.sessionActive) {
         this.conversations.delete(id);
-        this.logger.debug(`Evicted stale conversation ${id} (active: ${String(this.conversations.size)})`);
+        this.logger.debug(
+          `Evicted stale conversation ${id} (active: ${String(this.conversations.size)})`,
+        );
       }
     }
 
     const primary = this.getPrimary();
     if (primary) {
       if (primary.sessionActive || !primary.session) {
-        this.logger.debug(`Primary ${primary.id} is unavailable, creating isolated conversation`);
+        this.logger.debug(
+          `Primary ${primary.id} is unavailable, creating isolated conversation`,
+        );
         return { conversation: this.create(), isReuse: false };
       }
       this.logger.debug(`Reusing primary conversation ${primary.id}`);
@@ -91,7 +99,9 @@ export class DefaultConversationManager implements ConversationManager {
       if (convId === this.primaryId) {
         this.primaryId = null;
       }
-      this.logger.debug(`Removed conversation ${convId} (active: ${String(this.conversations.size)})`);
+      this.logger.debug(
+        `Removed conversation ${convId} (active: ${String(this.conversations.size)})`,
+      );
     }
   }
 

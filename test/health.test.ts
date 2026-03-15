@@ -12,9 +12,7 @@ const noopProvider: Provider = {
   register() {},
 };
 
-function createCtx(
-  pingImpl: AppContext["service"]["ping"],
-): AppContext {
+function createCtx(pingImpl: AppContext["service"]["ping"]): AppContext {
   return {
     service: { ping: pingImpl } as unknown as AppContext["service"],
     logger: new Logger("none"),
@@ -46,13 +44,15 @@ describe("GET /health", () => {
     const res = await app.inject({ method: "GET", url: "/health" });
 
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ status: "ok", message: "health", timestamp: 1000 });
+    expect(res.json()).toEqual({
+      status: "ok",
+      message: "health",
+      timestamp: 1000,
+    });
   });
 
   it("returns 503 with error message when ping fails", async () => {
-    const ctx = createCtx(() =>
-      Promise.reject(new Error("connection lost")),
-    );
+    const ctx = createCtx(() => Promise.reject(new Error("connection lost")));
     app = await createServer(ctx, noopProvider);
 
     const res = await app.inject({ method: "GET", url: "/health" });

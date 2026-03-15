@@ -3,16 +3,15 @@ import type { InputItem, FunctionCallOutput } from "./schemas.js";
 function extractContent(content: string | Record<string, unknown>[]): string {
   if (typeof content === "string") return content;
   return content
-    .filter((c): c is Record<string, unknown> & { text: string } =>
-      typeof c["text"] === "string",
+    .filter(
+      (c): c is Record<string, unknown> & { text: string } =>
+        typeof c["text"] === "string",
     )
     .map((c) => c.text)
     .join("");
 }
 
-export function formatResponsesPrompt(
-  input: string | InputItem[],
-): string {
+export function formatResponsesPrompt(input: string | InputItem[]): string {
   if (typeof input === "string") {
     return `[User]: ${input}`;
   }
@@ -36,7 +35,9 @@ export function formatResponsesPrompt(
           item.role satisfies never;
       }
     } else if (item.type === "function_call") {
-      parts.push(`[Assistant called tool ${item.name} with args: ${item.arguments}]`);
+      parts.push(
+        `[Assistant called tool ${item.name} with args: ${item.arguments}]`,
+      );
     } else {
       parts.push(`[Tool result for ${item.call_id}]: ${item.output}`);
     }
@@ -45,12 +46,17 @@ export function formatResponsesPrompt(
   return parts.join("\n\n");
 }
 
-export function extractInstructions(input: string | InputItem[]): string | undefined {
+export function extractInstructions(
+  input: string | InputItem[],
+): string | undefined {
   if (typeof input === "string") return undefined;
 
   const parts: string[] = [];
   for (const item of input) {
-    if ("role" in item && (item.role === "system" || item.role === "developer")) {
+    if (
+      "role" in item &&
+      (item.role === "system" || item.role === "developer")
+    ) {
       const text = extractContent(item.content);
       if (text) parts.push(text);
     }

@@ -1,7 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { runHandlerPipeline, type HandlerPipeline } from "../src/providers/shared/handler-core.js";
+import {
+  runHandlerPipeline,
+  type HandlerPipeline,
+} from "../src/providers/shared/handler-core.js";
 import type { AppContext } from "../src/context.js";
-import type { Conversation, ConversationManager } from "../src/conversation-manager.js";
+import type {
+  Conversation,
+  ConversationManager,
+} from "../src/conversation-manager.js";
 import type { CopilotSession, ModelInfo } from "@github/copilot-sdk";
 import { Logger } from "../src/logger.js";
 import { Stats } from "../src/stats.js";
@@ -10,8 +16,14 @@ const logger = new Logger("none");
 
 const AVAILABLE_MODELS: ModelInfo[] = [
   { id: "gpt-4", capabilities: { supports: { reasoningEffort: false } } },
-  { id: "claude-sonnet-4-5", capabilities: { supports: { reasoningEffort: false } } },
-  { id: "claude-opus-4-5", capabilities: { supports: { reasoningEffort: true } } },
+  {
+    id: "claude-sonnet-4-5",
+    capabilities: { supports: { reasoningEffort: false } },
+  },
+  {
+    id: "claude-opus-4-5",
+    capabilities: { supports: { reasoningEffort: true } },
+  },
 ] as ModelInfo[];
 
 interface MockSessionResult {
@@ -77,11 +89,14 @@ function createConversation(opts: {
   };
 }
 
-function createCtx(overrides?: { listModels?: () => Promise<ModelInfo[]> }): AppContext {
+function createCtx(overrides?: {
+  listModels?: () => Promise<ModelInfo[]>;
+}): AppContext {
   return {
     service: {
       cwd: "/tmp",
-      listModels: overrides?.listModels ?? (() => Promise.resolve(AVAILABLE_MODELS)),
+      listModels:
+        overrides?.listModels ?? (() => Promise.resolve(AVAILABLE_MODELS)),
       createSession: vi.fn().mockResolvedValue(mockSession().session),
     } as unknown as AppContext["service"],
     logger,
@@ -105,13 +120,20 @@ describe("model switching on reuse", () => {
   beforeEach(() => {
     const mock = mockSession();
     setModel = mock.setModel;
-    conversation = createConversation({ model: "gpt-4", session: mock.session });
+    conversation = createConversation({
+      model: "gpt-4",
+      session: mock.session,
+    });
     const manager: ConversationManager = {
       findForNewRequest: () => ({ conversation, isReuse: true }),
       remove: vi.fn(),
       clearPrimary: vi.fn(),
     };
-    handler = runHandlerPipeline(createCtx(), manager, createPipeline()) as typeof handler;
+    handler = runHandlerPipeline(
+      createCtx(),
+      manager,
+      createPipeline(),
+    ) as typeof handler;
   });
 
   async function switchTo(model: string): Promise<void> {

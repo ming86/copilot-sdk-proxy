@@ -71,9 +71,7 @@ describe("AnthropicRequestSchema", () => {
   it("accepts array content with text blocks", () => {
     const result = AnthropicRequestSchema.safeParse({
       ...validRequest,
-      messages: [
-        { role: "user", content: [{ type: "text", text: "Hello" }] },
-      ],
+      messages: [{ role: "user", content: [{ type: "text", text: "Hello" }] }],
     });
     expect(result.success).toBe(true);
   });
@@ -99,7 +97,12 @@ describe("AnthropicRequestSchema", () => {
     if (result.success) {
       const block = result.data.messages[0]!.content;
       expect(block).toEqual([
-        { type: "tool_use", id: "toolu_01", name: "get_weather", input: { location: "SF" } },
+        {
+          type: "tool_use",
+          id: "toolu_01",
+          name: "get_weather",
+          input: { location: "SF" },
+        },
       ]);
     }
   });

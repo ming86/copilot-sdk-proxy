@@ -104,8 +104,14 @@ describe("ServerConfigSchema", () => {
   });
 
   it("accepts boolean autoApprovePermissions", () => {
-    expect(ServerConfigSchema.parse({ autoApprovePermissions: true }).autoApprovePermissions).toBe(true);
-    expect(ServerConfigSchema.parse({ autoApprovePermissions: false }).autoApprovePermissions).toBe(false);
+    expect(
+      ServerConfigSchema.parse({ autoApprovePermissions: true })
+        .autoApprovePermissions,
+    ).toBe(true);
+    expect(
+      ServerConfigSchema.parse({ autoApprovePermissions: false })
+        .autoApprovePermissions,
+    ).toBe(false);
   });
 
   it("accepts array autoApprovePermissions with valid kinds", () => {

@@ -1,7 +1,10 @@
 import type { FastifyReply } from "fastify";
 import type { SessionConfig, CopilotSession } from "@github/copilot-sdk";
 import type { AppContext } from "../../context.js";
-import type { Conversation, ConversationManager } from "../../conversation-manager.js";
+import type {
+  Conversation,
+  ConversationManager,
+} from "../../conversation-manager.js";
 import type { Logger } from "../../logger.js";
 import type { Stats } from "../../stats.js";
 import type { SessionConfigOptions } from "./session-config.js";
@@ -10,9 +13,17 @@ import { createSessionConfig } from "./session-config.js";
 
 export interface BaseHandlerOptions<TReq> {
   beforeHandler?: (req: TReq, reply: FastifyReply) => Promise<boolean>;
-  onConversationReady?: (conversation: Conversation, req: TReq, isReuse: boolean) => void;
+  onConversationReady?: (
+    conversation: Conversation,
+    req: TReq,
+    isReuse: boolean,
+  ) => void;
   transformPrompt?: (prompt: string) => string;
-  createSessionConfig?: (baseOptions: SessionConfigOptions, conversation: Conversation, req: TReq) => SessionConfig;
+  createSessionConfig?: (
+    baseOptions: SessionConfigOptions,
+    conversation: Conversation,
+    req: TReq,
+  ) => SessionConfig;
   handleStreaming?: (params: {
     conversation: Conversation;
     session: CopilotSession;
@@ -24,18 +35,35 @@ export interface BaseHandlerOptions<TReq> {
 }
 
 export interface HandlerPipeline<TReq> extends BaseHandlerOptions<TReq> {
-  sendError: (reply: FastifyReply, status: number, type: "invalid_request_error" | "api_error", message: string) => void;
+  sendError: (
+    reply: FastifyReply,
+    status: number,
+    type: "invalid_request_error" | "api_error",
+    message: string,
+  ) => void;
 
   extractSystemMessage: (req: TReq) => string | undefined;
 
-  formatPrompt: (req: TReq, conversation: Conversation, isReuse: boolean) => string;
+  formatPrompt: (
+    req: TReq,
+    conversation: Conversation,
+    isReuse: boolean,
+  ) => string;
 
   messageCount: (req: TReq) => number;
 
-  stream: (session: CopilotSession, prompt: string, model: string, reply: FastifyReply, deps: { logger: Logger; stats: Stats }) => Promise<boolean>;
+  stream: (
+    session: CopilotSession,
+    prompt: string,
+    model: string,
+    reply: FastifyReply,
+    deps: { logger: Logger; stats: Stats },
+  ) => Promise<boolean>;
 }
 
-export function runHandlerPipeline<TReq extends { model: string; stream?: boolean | undefined }>(
+export function runHandlerPipeline<
+  TReq extends { model: string; stream?: boolean | undefined },
+>(
   ctx: AppContext,
   manager: ConversationManager,
   corePipeline: HandlerPipeline<TReq>,
@@ -46,14 +74,16 @@ export function runHandlerPipeline<TReq extends { model: string; stream?: boolea
     : corePipeline;
   const { service, logger, config, stats } = ctx;
 
-  return async function handler(
-    req: TReq,
-    reply: FastifyReply,
-  ): Promise<void> {
+  return async function handler(req: TReq, reply: FastifyReply): Promise<void> {
     stats.recordRequest();
 
     if (req.stream === false) {
-      pipeline.sendError(reply, 400, "invalid_request_error", "Only streaming responses are supported (stream must be true or omitted)");
+      pipeline.sendError(
+        reply,
+        400,
+        "invalid_request_error",
+        "Only streaming responses are supported (stream must be true or omitted)",
+      );
       return;
     }
 
@@ -71,16 +101,30 @@ export function runHandlerPipeline<TReq extends { model: string; stream?: boolea
         : `New conversation ${conversation.id}`,
     );
 
-    if (isReuse && conversation.session && conversation.model
-        && normalizeModelId(conversation.model) !== normalizeModelId(req.model)) {
-      const resolved = await resolveModelForSession(service, req.model, config, logger);
+    if (
+      isReuse &&
+      conversation.session &&
+      conversation.model &&
+      normalizeModelId(conversation.model) !== normalizeModelId(req.model)
+    ) {
+      const resolved = await resolveModelForSession(
+        service,
+        req.model,
+        config,
+        logger,
+      );
       if (resolved.ok) {
         try {
           await conversation.session.setModel(resolved.model);
-          logger.info(`Switched model: "${conversation.model}" → "${resolved.model}"`);
+          logger.info(
+            `Switched model: "${conversation.model}" → "${resolved.model}"`,
+          );
           conversation.model = resolved.model;
         } catch (err) {
-          logger.warn(`Failed to switch model to "${resolved.model}", continuing with "${conversation.model}":`, err);
+          logger.warn(
+            `Failed to switch model to "${resolved.model}", continuing with "${conversation.model}":`,
+            err,
+          );
         }
       } else {
         logger.warn(`Cannot switch model: ${resolved.error}`);
@@ -112,14 +156,23 @@ export function runHandlerPipeline<TReq extends { model: string; stream?: boolea
       return;
     }
 
-    logger.debug(`Prompt (${isReuse ? "incremental" : "full"}): ${String(prompt.length)} chars`);
+    logger.debug(
+      `Prompt (${isReuse ? "incremental" : "full"}): ${String(prompt.length)} chars`,
+    );
 
     if (!isReuse) {
       const systemMessage = pipeline.extractSystemMessage(req);
 
-      logger.debug(`System message length: ${String(systemMessage?.length ?? 0)} chars`);
+      logger.debug(
+        `System message length: ${String(systemMessage?.length ?? 0)} chars`,
+      );
 
-      const resolved = await resolveModelForSession(service, req.model, config, logger);
+      const resolved = await resolveModelForSession(
+        service,
+        req.model,
+        config,
+        logger,
+      );
       if (!resolved.ok) {
         pipeline.sendError(reply, 400, "invalid_request_error", resolved.error);
         manager.remove(conversation.id);
@@ -174,7 +227,13 @@ export function runHandlerPipeline<TReq extends { model: string; stream?: boolea
         });
       } else {
         logger.info(`Streaming response for conversation ${conversation.id}`);
-        const healthy = await pipeline.stream(conversation.session, prompt, req.model, reply, { logger, stats });
+        const healthy = await pipeline.stream(
+          conversation.session,
+          prompt,
+          req.model,
+          reply,
+          { logger, stats },
+        );
         if (healthy) {
           conversation.sentMessageCount = pipeline.messageCount(req);
         } else {

@@ -1,5 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { startReply, AnthropicProtocol } from "../src/providers/claude/streaming.js";
+import {
+  startReply,
+  AnthropicProtocol,
+} from "../src/providers/claude/streaming.js";
 
 function mockReply() {
   const written: string[] = [];
@@ -32,7 +35,9 @@ describe("startReply", () => {
     startReply(reply, "claude-sonnet-4.6");
     expect(state.headWritten).toBe(true);
     expect(written.length).toBe(1);
-    const event = parseSSE(written[0]!) as { message: { role: string; model: string } };
+    const event = parseSSE(written[0]!) as {
+      message: { role: string; model: string };
+    };
     expect(event.message.role).toBe("assistant");
     expect(event.message.model).toBe("claude-sonnet-4.6");
   });
@@ -62,7 +67,9 @@ describe("AnthropicProtocol", () => {
     expect(after.length).toBe(3);
     const blockStop = parseSSE(after[0]!) as { type: string };
     expect(blockStop.type).toBe("content_block_stop");
-    const messageDelta = parseSSE(after[1]!) as { delta: { stop_reason: string } };
+    const messageDelta = parseSSE(after[1]!) as {
+      delta: { stop_reason: string };
+    };
     expect(messageDelta.delta.stop_reason).toBe("end_turn");
     const messageStop = parseSSE(after[2]!) as { type: string };
     expect(messageStop.type).toBe("message_stop");
@@ -73,7 +80,9 @@ describe("AnthropicProtocol", () => {
     const protocol = new AnthropicProtocol();
     protocol.sendFailed(reply);
     expect(written.length).toBe(2);
-    const messageDelta = parseSSE(written[0]!) as { delta: { stop_reason: string } };
+    const messageDelta = parseSSE(written[0]!) as {
+      delta: { stop_reason: string };
+    };
     expect(messageDelta.delta.stop_reason).toBe("end_turn");
   });
 
@@ -108,19 +117,37 @@ describe("AnthropicProtocol", () => {
 
     const events = written.map((w) => parseSSE(w) as Record<string, unknown>);
 
-    const thinkingStart = events.find((e) => e.type === "content_block_start" && (e.content_block as Record<string, unknown>).type === "thinking");
+    const thinkingStart = events.find(
+      (e) =>
+        e.type === "content_block_start" &&
+        (e.content_block as Record<string, unknown>).type === "thinking",
+    );
     expect(thinkingStart).toBeDefined();
     expect(thinkingStart!.index).toBe(0);
 
-    const thinkingDelta = events.find((e) => e.type === "content_block_delta" && (e.delta as Record<string, unknown>).type === "thinking_delta");
+    const thinkingDelta = events.find(
+      (e) =>
+        e.type === "content_block_delta" &&
+        (e.delta as Record<string, unknown>).type === "thinking_delta",
+    );
     expect(thinkingDelta).toBeDefined();
-    expect((thinkingDelta!.delta as Record<string, unknown>).thinking).toBe("Let me think");
+    expect((thinkingDelta!.delta as Record<string, unknown>).thinking).toBe(
+      "Let me think",
+    );
 
-    const textStart = events.find((e) => e.type === "content_block_start" && (e.content_block as Record<string, unknown>).type === "text");
+    const textStart = events.find(
+      (e) =>
+        e.type === "content_block_start" &&
+        (e.content_block as Record<string, unknown>).type === "text",
+    );
     expect(textStart).toBeDefined();
     expect(textStart!.index).toBe(1);
 
-    const textDelta = events.find((e) => e.type === "content_block_delta" && (e.delta as Record<string, unknown>).type === "text_delta");
+    const textDelta = events.find(
+      (e) =>
+        e.type === "content_block_delta" &&
+        (e.delta as Record<string, unknown>).type === "text_delta",
+    );
     expect(textDelta).toBeDefined();
     expect(textDelta!.index).toBe(1);
   });
@@ -133,7 +160,11 @@ describe("AnthropicProtocol", () => {
     protocol.sendCompleted(reply);
 
     const events = written.map((w) => parseSSE(w) as Record<string, unknown>);
-    const textStart = events.find((e) => e.type === "content_block_start" && (e.content_block as Record<string, unknown>).type === "text");
+    const textStart = events.find(
+      (e) =>
+        e.type === "content_block_start" &&
+        (e.content_block as Record<string, unknown>).type === "text",
+    );
     expect(textStart).toBeDefined();
     expect(textStart!.index).toBe(0);
   });
@@ -155,11 +186,19 @@ describe("AnthropicProtocol", () => {
     const indices = blockStarts.map((e) => e.index);
     expect(new Set(indices).size).toBe(indices.length);
 
-    const turn1Text = blockStarts.find((e) => (e.content_block as Record<string, unknown>).type === "text" && e.index === 0);
-    const thinkingBlock = blockStarts.find((e) => (e.content_block as Record<string, unknown>).type === "thinking");
+    const turn1Text = blockStarts.find(
+      (e) =>
+        (e.content_block as Record<string, unknown>).type === "text" &&
+        e.index === 0,
+    );
+    const thinkingBlock = blockStarts.find(
+      (e) => (e.content_block as Record<string, unknown>).type === "thinking",
+    );
     expect(turn1Text).toBeDefined();
     expect(thinkingBlock).toBeDefined();
-    expect((thinkingBlock!.index as number)).toBeGreaterThan(turn1Text!.index as number);
+    expect(thinkingBlock!.index as number).toBeGreaterThan(
+      turn1Text!.index as number,
+    );
   });
 
   it("closes thinking block with content_block_stop before text block starts", () => {
@@ -171,8 +210,14 @@ describe("AnthropicProtocol", () => {
     protocol.flushDeltas(reply, ["answer"]);
 
     const events = written.map((w) => parseSSE(w) as Record<string, unknown>);
-    const thinkingStop = events.find((e) => e.type === "content_block_stop" && e.index === 0);
-    const textStart = events.find((e) => e.type === "content_block_start" && (e.content_block as Record<string, unknown>).type === "text");
+    const thinkingStop = events.find(
+      (e) => e.type === "content_block_stop" && e.index === 0,
+    );
+    const textStart = events.find(
+      (e) =>
+        e.type === "content_block_start" &&
+        (e.content_block as Record<string, unknown>).type === "text",
+    );
 
     expect(thinkingStop).toBeDefined();
     expect(textStart).toBeDefined();

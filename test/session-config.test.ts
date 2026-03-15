@@ -134,7 +134,10 @@ describe("createSessionConfig", () => {
       config: defaultConfig({ autoApprovePermissions: true }),
       supportsReasoningEffort: false,
     });
-    const response = await result.onPermissionRequest({ kind: "read" }, { sessionId: "test" });
+    const response = await result.onPermissionRequest(
+      { kind: "read" },
+      { sessionId: "test" },
+    );
     expect(response.kind).toBe("approved");
   });
 
@@ -145,7 +148,10 @@ describe("createSessionConfig", () => {
       config: defaultConfig({ autoApprovePermissions: false }),
       supportsReasoningEffort: false,
     });
-    const response = await result.onPermissionRequest({ kind: "read" }, { sessionId: "test" });
+    const response = await result.onPermissionRequest(
+      { kind: "read" },
+      { sessionId: "test" },
+    );
     expect(response.kind).toBe("denied-by-rules");
   });
 
@@ -156,9 +162,15 @@ describe("createSessionConfig", () => {
       config: defaultConfig({ autoApprovePermissions: ["read", "write"] }),
       supportsReasoningEffort: false,
     });
-    const readResponse = await result.onPermissionRequest({ kind: "read" }, { sessionId: "test" });
+    const readResponse = await result.onPermissionRequest(
+      { kind: "read" },
+      { sessionId: "test" },
+    );
     expect(readResponse.kind).toBe("approved");
-    const shellResponse = await result.onPermissionRequest({ kind: "shell" }, { sessionId: "test" });
+    const shellResponse = await result.onPermissionRequest(
+      { kind: "shell" },
+      { sessionId: "test" },
+    );
     expect(shellResponse.kind).toBe("denied-by-rules");
   });
 
@@ -169,7 +181,10 @@ describe("createSessionConfig", () => {
       config: defaultConfig(),
       supportsReasoningEffort: false,
     });
-    const response = await result.onUserInputRequest!({ question: "What?" }, { sessionId: "test" });
+    const response = await result.onUserInputRequest!(
+      { question: "What?" },
+      { sessionId: "test" },
+    );
     expect(response.wasFreeform).toBe(true);
     expect(response.answer).toContain("not available");
   });
@@ -182,7 +197,10 @@ describe("createSessionConfig", () => {
       config,
       supportsReasoningEffort: false,
     });
-    const response = await result.hooks!.onPreToolUse!({ toolName: "glob" } as never, { sessionId: "test" });
+    const response = await result.hooks!.onPreToolUse!(
+      { toolName: "glob" } as never,
+      { sessionId: "test" },
+    );
     expect(response).toEqual({ permissionDecision: "allow" });
   });
 
@@ -194,7 +212,10 @@ describe("createSessionConfig", () => {
       config,
       supportsReasoningEffort: false,
     });
-    const response = await result.hooks!.onPreToolUse!({ toolName: "anything" } as never, { sessionId: "test" });
+    const response = await result.hooks!.onPreToolUse!(
+      { toolName: "anything" } as never,
+      { sessionId: "test" },
+    );
     expect(response).toEqual({ permissionDecision: "allow" });
   });
 
@@ -206,7 +227,10 @@ describe("createSessionConfig", () => {
       config,
       supportsReasoningEffort: false,
     });
-    const response = await result.hooks!.onPreToolUse!({ toolName: "bash" } as never, { sessionId: "test" });
+    const response = await result.hooks!.onPreToolUse!(
+      { toolName: "bash" } as never,
+      { sessionId: "test" },
+    );
     expect(response).toEqual({ permissionDecision: "deny" });
   });
 
@@ -228,7 +252,10 @@ describe("createSessionConfig", () => {
       config,
       supportsReasoningEffort: false,
     });
-    const response = await result.hooks!.onPreToolUse!({ toolName: "custom_tool" } as never, { sessionId: "test" });
+    const response = await result.hooks!.onPreToolUse!(
+      { toolName: "custom_tool" } as never,
+      { sessionId: "test" },
+    );
     expect(response).toEqual({ permissionDecision: "allow" });
   });
 
@@ -242,10 +269,19 @@ describe("createSessionConfig", () => {
       supportsReasoningEffort: false,
     });
     await result.hooks!.onPostToolUse!(
-      { toolName: "bash", toolArgs: { command: "ls" }, toolResult: {}, timestamp: 0, cwd: "/" } as never,
+      {
+        toolName: "bash",
+        toolArgs: { command: "ls" },
+        toolResult: {},
+        timestamp: 0,
+        cwd: "/",
+      } as never,
       { sessionId: "test" },
     );
-    expect(spy).toHaveBeenCalledWith(expect.stringContaining("Tool executed: bash"), { command: "ls" });
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining("Tool executed: bash"),
+      { command: "ls" },
+    );
   });
 
   it("hooks.onErrorOccurred returns retry for recoverable model_call errors", () => {
@@ -258,7 +294,13 @@ describe("createSessionConfig", () => {
       supportsReasoningEffort: false,
     });
     const output = result.hooks!.onErrorOccurred!(
-      { error: "rate limit", errorContext: "model_call", recoverable: true, timestamp: 0, cwd: "/" } as never,
+      {
+        error: "rate limit",
+        errorContext: "model_call",
+        recoverable: true,
+        timestamp: 0,
+        cwd: "/",
+      } as never,
       { sessionId: "test" },
     );
     expect(output).toEqual({ errorHandling: "retry", retryCount: 2 });
@@ -275,7 +317,13 @@ describe("createSessionConfig", () => {
       supportsReasoningEffort: false,
     });
     const output = result.hooks!.onErrorOccurred!(
-      { error: "timeout", errorContext: "tool_execution", recoverable: true, timestamp: 0, cwd: "/" } as never,
+      {
+        error: "timeout",
+        errorContext: "tool_execution",
+        recoverable: true,
+        timestamp: 0,
+        cwd: "/",
+      } as never,
       { sessionId: "test" },
     );
     expect(output).toEqual({ errorHandling: "retry", retryCount: 2 });
@@ -292,11 +340,19 @@ describe("createSessionConfig", () => {
       supportsReasoningEffort: false,
     });
     const output = result.hooks!.onErrorOccurred!(
-      { error: "fatal", errorContext: "model_call", recoverable: false, timestamp: 0, cwd: "/" } as never,
+      {
+        error: "fatal",
+        errorContext: "model_call",
+        recoverable: false,
+        timestamp: 0,
+        cwd: "/",
+      } as never,
       { sessionId: "test" },
     );
     expect(output).toBeUndefined();
-    expect(spy).toHaveBeenCalledWith(expect.stringContaining("not recoverable"));
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining("not recoverable"),
+    );
   });
 
   it("hooks.onErrorOccurred does not retry system errors", () => {
@@ -309,7 +365,13 @@ describe("createSessionConfig", () => {
       supportsReasoningEffort: false,
     });
     const output = result.hooks!.onErrorOccurred!(
-      { error: "internal", errorContext: "system", recoverable: true, timestamp: 0, cwd: "/" } as never,
+      {
+        error: "internal",
+        errorContext: "system",
+        recoverable: true,
+        timestamp: 0,
+        cwd: "/",
+      } as never,
       { sessionId: "test" },
     );
     expect(output).toBeUndefined();
