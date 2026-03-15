@@ -81,8 +81,12 @@ export class Stats {
       existing.cacheWriteTokens += cacheWrite;
     } else {
       this.byModel.set(model, {
-        requests: 1, cost, inputTokens: input, outputTokens: output,
-        cacheReadTokens: cacheRead, cacheWriteTokens: cacheWrite,
+        requests: 1,
+        cost,
+        inputTokens: input,
+        outputTokens: output,
+        cacheReadTokens: cacheRead,
+        cacheWriteTokens: cacheWrite,
       });
     }
   }

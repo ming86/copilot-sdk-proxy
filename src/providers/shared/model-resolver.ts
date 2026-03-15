@@ -16,9 +16,7 @@ function extractFamily(id: string): string {
   return match?.[1] ?? id;
 }
 
-export type ModelMatch =
-  | { ok: true; model: string }
-  | { ok: false };
+export type ModelMatch = { ok: true; model: string } | { ok: false };
 
 export function resolveModel(
   requestedModel: string,

@@ -38,7 +38,12 @@ describe("formatResponsesPrompt", () => {
 
   it("handles function_call items", () => {
     const input = [
-      { type: "function_call" as const, call_id: "call_1", name: "get_weather", arguments: '{"city":"SF"}' },
+      {
+        type: "function_call" as const,
+        call_id: "call_1",
+        name: "get_weather",
+        arguments: '{"city":"SF"}',
+      },
     ];
     expect(formatResponsesPrompt(input)).toBe(
       '[Assistant called tool get_weather with args: {"city":"SF"}]',
@@ -47,7 +52,11 @@ describe("formatResponsesPrompt", () => {
 
   it("handles function_call_output items", () => {
     const input = [
-      { type: "function_call_output" as const, call_id: "call_1", output: "Sunny, 72F" },
+      {
+        type: "function_call_output" as const,
+        call_id: "call_1",
+        output: "Sunny, 72F",
+      },
     ];
     expect(formatResponsesPrompt(input)).toBe(
       "[Tool result for call_1]: Sunny, 72F",
@@ -57,8 +66,17 @@ describe("formatResponsesPrompt", () => {
   it("handles mixed items", () => {
     const input = [
       { role: "user" as const, content: "What's the weather?" },
-      { type: "function_call" as const, call_id: "call_1", name: "get_weather", arguments: '{"city":"SF"}' },
-      { type: "function_call_output" as const, call_id: "call_1", output: "Sunny" },
+      {
+        type: "function_call" as const,
+        call_id: "call_1",
+        name: "get_weather",
+        arguments: '{"city":"SF"}',
+      },
+      {
+        type: "function_call_output" as const,
+        call_id: "call_1",
+        output: "Sunny",
+      },
     ];
     const result = formatResponsesPrompt(input);
     expect(result).toContain("[User]: What's the weather?");
@@ -86,9 +104,7 @@ describe("extractInstructions", () => {
   });
 
   it("extracts developer message content", () => {
-    const input = [
-      { role: "developer" as const, content: "Instructions" },
-    ];
+    const input = [{ role: "developer" as const, content: "Instructions" }];
     expect(extractInstructions(input)).toBe("Instructions");
   });
 
@@ -114,8 +130,16 @@ describe("extractFunctionCallOutputs", () => {
   it("extracts function_call_output items", () => {
     const input = [
       { role: "user" as const, content: "Hello" },
-      { type: "function_call_output" as const, call_id: "call_1", output: "result1" },
-      { type: "function_call_output" as const, call_id: "call_2", output: "result2" },
+      {
+        type: "function_call_output" as const,
+        call_id: "call_1",
+        output: "result1",
+      },
+      {
+        type: "function_call_output" as const,
+        call_id: "call_2",
+        output: "result2",
+      },
     ];
     const outputs = extractFunctionCallOutputs(input);
     expect(outputs).toHaveLength(2);

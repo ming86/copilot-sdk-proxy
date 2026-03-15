@@ -42,8 +42,14 @@ export async function createServer(
 
   app.get("/health", async (_req, reply) => {
     try {
-      const { message, timestamp, protocolVersion } = await ctx.service.ping("health");
-      return await reply.send({ status: "ok", message, timestamp, protocolVersion });
+      const { message, timestamp, protocolVersion } =
+        await ctx.service.ping("health");
+      return await reply.send({
+        status: "ok",
+        message,
+        timestamp,
+        protocolVersion,
+      });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       return reply.status(503).send({ status: "error", message });

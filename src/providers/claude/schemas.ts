@@ -1,4 +1,7 @@
-import { AnthropicRequestSchema as BaseAnthropicRequestSchema, type AnthropicRequest as BaseAnthropicRequest } from "llm-schemas/anthropic";
+import {
+  AnthropicRequestSchema as BaseAnthropicRequestSchema,
+  type AnthropicRequest as BaseAnthropicRequest,
+} from "llm-schemas/anthropic";
 
 export interface TextBlock {
   type: "text";
@@ -46,7 +49,12 @@ export interface MessageStartEvent {
 
 export type TextContentBlock = { type: "text"; text: "" };
 export type ThinkingContentBlock = { type: "thinking"; thinking: "" };
-export type ToolUseContentBlock = { type: "tool_use"; id: string; name: string; input: Record<string, unknown> };
+export type ToolUseContentBlock = {
+  type: "tool_use";
+  id: string;
+  name: string;
+  input: Record<string, unknown>;
+};
 
 export interface ContentBlockStartEvent {
   type: "content_block_start";
@@ -117,14 +125,15 @@ function filterUnknownBlocks(data: BaseAnthropicRequest): AnthropicRequest {
       content:
         typeof msg.content === "string"
           ? msg.content
-          : msg.content.filter(
-              (b): b is ContentBlock => KNOWN_BLOCK_TYPES.has(b.type),
+          : msg.content.filter((b): b is ContentBlock =>
+              KNOWN_BLOCK_TYPES.has(b.type),
             ),
     })),
   } as AnthropicRequest;
 }
 
-export const AnthropicRequestSchema = BaseAnthropicRequestSchema.transform(filterUnknownBlocks);
+export const AnthropicRequestSchema =
+  BaseAnthropicRequestSchema.transform(filterUnknownBlocks);
 
 // The Anthropic API accepts system as a string or an array of text blocks,
 // so we flatten it into a single string for the Copilot SDK.

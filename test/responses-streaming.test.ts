@@ -1,13 +1,22 @@
 import { describe, it, expect } from "vitest";
-import { nextSeq, startResponseStream, ResponsesProtocol } from "../src/providers/codex/streaming.js";
+import {
+  nextSeq,
+  startResponseStream,
+  ResponsesProtocol,
+} from "../src/providers/codex/streaming.js";
 import type { SeqCounter } from "../src/providers/codex/streaming.js";
 
-function mockReply(): { reply: Parameters<typeof startResponseStream>[0]; written: string[] } {
+function mockReply(): {
+  reply: Parameters<typeof startResponseStream>[0];
+  written: string[];
+} {
   const written: string[] = [];
   const reply = {
     raw: {
       writeHead: () => {},
-      write: (chunk: string) => { written.push(chunk); },
+      write: (chunk: string) => {
+        written.push(chunk);
+      },
     },
   } as unknown as Parameters<typeof startResponseStream>[0];
   return { reply, written };
@@ -53,8 +62,12 @@ describe("startResponseStream", () => {
   it("uses same created_at in both initial events", () => {
     const { reply, written } = mockReply();
     startResponseStream(reply, "resp_1", "gpt-5.2");
-    const created = parseSSEData(written[0]!) as { response: { created_at: number } };
-    const inProgress = parseSSEData(written[1]!) as { response: { created_at: number } };
+    const created = parseSSEData(written[0]!) as {
+      response: { created_at: number };
+    };
+    const inProgress = parseSSEData(written[1]!) as {
+      response: { created_at: number };
+    };
     expect(created.response.created_at).toBe(inProgress.response.created_at);
   });
 });
@@ -68,12 +81,22 @@ describe("ResponsesProtocol", () => {
     protocol.flushDeltas(reply, ["hello"]);
     protocol.sendCompleted(reply);
 
-    const completedChunk = written.find((c) => c.includes("event: response.completed"))!;
-    const completedData = parseSSEData(completedChunk) as { response: { created_at: number } };
-    const createdChunk = written.find((c) => c.includes("event: response.created"))!;
-    const createdData = parseSSEData(createdChunk) as { response: { created_at: number } };
+    const completedChunk = written.find((c) =>
+      c.includes("event: response.completed"),
+    )!;
+    const completedData = parseSSEData(completedChunk) as {
+      response: { created_at: number };
+    };
+    const createdChunk = written.find((c) =>
+      c.includes("event: response.created"),
+    )!;
+    const createdData = parseSSEData(createdChunk) as {
+      response: { created_at: number };
+    };
 
-    expect(completedData.response.created_at).toBe(createdData.response.created_at);
+    expect(completedData.response.created_at).toBe(
+      createdData.response.created_at,
+    );
   });
 
   it("uses same created_at in failed envelope as startResponseStream", () => {
@@ -83,12 +106,22 @@ describe("ResponsesProtocol", () => {
 
     protocol.sendFailed(reply);
 
-    const failedChunk = written.find((c) => c.includes("event: response.failed"))!;
-    const failedData = parseSSEData(failedChunk) as { response: { created_at: number } };
-    const createdChunk = written.find((c) => c.includes("event: response.created"))!;
-    const createdData = parseSSEData(createdChunk) as { response: { created_at: number } };
+    const failedChunk = written.find((c) =>
+      c.includes("event: response.failed"),
+    )!;
+    const failedData = parseSSEData(failedChunk) as {
+      response: { created_at: number };
+    };
+    const createdChunk = written.find((c) =>
+      c.includes("event: response.created"),
+    )!;
+    const createdData = parseSSEData(createdChunk) as {
+      response: { created_at: number };
+    };
 
-    expect(failedData.response.created_at).toBe(createdData.response.created_at);
+    expect(failedData.response.created_at).toBe(
+      createdData.response.created_at,
+    );
   });
 
   it("accumulates text deltas and includes them in completed output", () => {
@@ -99,8 +132,12 @@ describe("ResponsesProtocol", () => {
     protocol.flushDeltas(reply, ["hello", " world"]);
     protocol.sendCompleted(reply);
 
-    const completedChunk = written.find((c) => c.includes("event: response.completed"))!;
-    const data = parseSSEData(completedChunk) as { response: { output: { content: { text: string }[] }[] } };
+    const completedChunk = written.find((c) =>
+      c.includes("event: response.completed"),
+    )!;
+    const data = parseSSEData(completedChunk) as {
+      response: { output: { content: { text: string }[] }[] };
+    };
     expect(data.response.output[0]!.content[0]!.text).toBe("hello world");
   });
 
@@ -112,7 +149,9 @@ describe("ResponsesProtocol", () => {
     protocol.flushDeltas(reply, ["hi"]);
     protocol.sendCompleted(reply);
 
-    const seqNumbers = written.map((c) => (parseSSEData(c) as { sequence_number: number }).sequence_number);
+    const seqNumbers = written.map(
+      (c) => (parseSSEData(c) as { sequence_number: number }).sequence_number,
+    );
     for (let i = 1; i < seqNumbers.length; i++) {
       expect(seqNumbers[i]).toBe(seqNumbers[i - 1]! + 1);
     }
@@ -120,8 +159,17 @@ describe("ResponsesProtocol", () => {
 
   it("emits reasoning events before message events", () => {
     const { reply, written } = mockReply();
-    const { seq, createdAt } = startResponseStream(reply, "resp_1", "gpt-5.3-codex");
-    const protocol = new ResponsesProtocol("resp_1", "gpt-5.3-codex", seq, createdAt);
+    const { seq, createdAt } = startResponseStream(
+      reply,
+      "resp_1",
+      "gpt-5.3-codex",
+    );
+    const protocol = new ResponsesProtocol(
+      "resp_1",
+      "gpt-5.3-codex",
+      seq,
+      createdAt,
+    );
 
     protocol.flushReasoningDeltas(reply, ["Let me", " think"]);
     protocol.reasoningComplete(reply);
@@ -138,37 +186,61 @@ describe("ResponsesProtocol", () => {
     expect(eventTypes).toContain("response.reasoning_summary_text.done");
     expect(eventTypes).toContain("response.output_text.delta");
 
-    const reasoningDoneIdx = eventTypes.indexOf("response.reasoning_summary_text.done");
+    const reasoningDoneIdx = eventTypes.indexOf(
+      "response.reasoning_summary_text.done",
+    );
     const textDeltaIdx = eventTypes.indexOf("response.output_text.delta");
     expect(reasoningDoneIdx).toBeLessThan(textDeltaIdx);
   });
 
   it("accumulates reasoning text in completed reasoning item", () => {
     const { reply, written } = mockReply();
-    const { seq, createdAt } = startResponseStream(reply, "resp_1", "gpt-5.3-codex");
-    const protocol = new ResponsesProtocol("resp_1", "gpt-5.3-codex", seq, createdAt);
+    const { seq, createdAt } = startResponseStream(
+      reply,
+      "resp_1",
+      "gpt-5.3-codex",
+    );
+    const protocol = new ResponsesProtocol(
+      "resp_1",
+      "gpt-5.3-codex",
+      seq,
+      createdAt,
+    );
 
     protocol.flushReasoningDeltas(reply, ["part1", "part2"]);
     protocol.reasoningComplete(reply);
     protocol.flushDeltas(reply, ["answer"]);
     protocol.sendCompleted(reply);
 
-    const reasoningDone = written.find((c) => c.includes("event: response.reasoning_summary_text.done"));
+    const reasoningDone = written.find((c) =>
+      c.includes("event: response.reasoning_summary_text.done"),
+    );
     const data = parseSSEData(reasoningDone!) as { text: string };
     expect(data.text).toBe("part1part2");
   });
 
   it("includes reasoning output item in completed response", () => {
     const { reply, written } = mockReply();
-    const { seq, createdAt } = startResponseStream(reply, "resp_1", "gpt-5.3-codex");
-    const protocol = new ResponsesProtocol("resp_1", "gpt-5.3-codex", seq, createdAt);
+    const { seq, createdAt } = startResponseStream(
+      reply,
+      "resp_1",
+      "gpt-5.3-codex",
+    );
+    const protocol = new ResponsesProtocol(
+      "resp_1",
+      "gpt-5.3-codex",
+      seq,
+      createdAt,
+    );
 
     protocol.flushReasoningDeltas(reply, ["thinking"]);
     protocol.reasoningComplete(reply);
     protocol.flushDeltas(reply, ["answer"]);
     protocol.sendCompleted(reply);
 
-    const completedChunk = written.find((c) => c.includes("event: response.completed"))!;
+    const completedChunk = written.find((c) =>
+      c.includes("event: response.completed"),
+    )!;
     const data = parseSSEData(completedChunk) as {
       response: { output: { type: string; summary?: { text: string }[] }[] };
     };
@@ -179,8 +251,17 @@ describe("ResponsesProtocol", () => {
 
   it("handles multi-turn: closes message before reasoning on next turn", () => {
     const { reply, written } = mockReply();
-    const { seq, createdAt } = startResponseStream(reply, "resp_1", "gpt-5.3-codex");
-    const protocol = new ResponsesProtocol("resp_1", "gpt-5.3-codex", seq, createdAt);
+    const { seq, createdAt } = startResponseStream(
+      reply,
+      "resp_1",
+      "gpt-5.3-codex",
+    );
+    const protocol = new ResponsesProtocol(
+      "resp_1",
+      "gpt-5.3-codex",
+      seq,
+      createdAt,
+    );
 
     protocol.flushDeltas(reply, ["turn1"]);
     // Simulate a second turn where reasoning arrives after a tool call
@@ -189,7 +270,9 @@ describe("ResponsesProtocol", () => {
     protocol.flushDeltas(reply, ["turn2"]);
     protocol.sendCompleted(reply);
 
-    const completedChunk = written.find((c) => c.includes("event: response.completed"))!;
+    const completedChunk = written.find((c) =>
+      c.includes("event: response.completed"),
+    )!;
     const data = parseSSEData(completedChunk) as {
       response: { output: { type: string; content?: { text: string }[] }[] };
     };
@@ -214,7 +297,9 @@ describe("ResponsesProtocol", () => {
     protocol.flushDeltas(reply, ["hello"]);
     protocol.sendCompleted(reply);
 
-    const completedChunk = written.find((c) => c.includes("event: response.completed"))!;
+    const completedChunk = written.find((c) =>
+      c.includes("event: response.completed"),
+    )!;
     const data = parseSSEData(completedChunk) as {
       response: { output: { type: string }[] };
     };

@@ -51,9 +51,10 @@ export function createSessionConfig({
     ...(config.allowedCliTools.length > 0 && {
       availableTools: config.allowedCliTools,
     }),
-    ...(config.reasoningEffort && supportsReasoningEffort && {
-      reasoningEffort: config.reasoningEffort,
-    }),
+    ...(config.reasoningEffort &&
+      supportsReasoningEffort && {
+        reasoningEffort: config.reasoningEffort,
+      }),
 
     onUserInputRequest: (request) => {
       logger.debug(`User input requested: "${request.question}"`);
@@ -80,7 +81,10 @@ export function createSessionConfig({
       onPreToolUse: (input) => {
         const toolName = input.toolName;
 
-        if (config.allowedCliTools.includes("*") || config.allowedCliTools.includes(toolName)) {
+        if (
+          config.allowedCliTools.includes("*") ||
+          config.allowedCliTools.includes(toolName)
+        ) {
           logger.debug(`Tool "${toolName}": allowed (CLI)`);
           return Promise.resolve({ permissionDecision: "allow" as const });
         }
@@ -102,8 +106,14 @@ export function createSessionConfig({
       },
 
       onErrorOccurred: (input) => {
-        logger.warn(`SDK error (${input.errorContext}, ${input.recoverable ? "recoverable" : "not recoverable"}): ${input.error}`);
-        if (input.recoverable && (input.errorContext === "model_call" || input.errorContext === "tool_execution")) {
+        logger.warn(
+          `SDK error (${input.errorContext}, ${input.recoverable ? "recoverable" : "not recoverable"}): ${input.error}`,
+        );
+        if (
+          input.recoverable &&
+          (input.errorContext === "model_call" ||
+            input.errorContext === "tool_execution")
+        ) {
           return { errorHandling: "retry" as const, retryCount: 2 };
         }
         return undefined;

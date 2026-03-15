@@ -29,7 +29,12 @@ describe("ResponsesRequestSchema", () => {
     const result = ResponsesRequestSchema.safeParse({
       model: "o3-mini",
       input: [
-        { type: "function_call", call_id: "call_1", name: "search", arguments: "{}" },
+        {
+          type: "function_call",
+          call_id: "call_1",
+          name: "search",
+          arguments: "{}",
+        },
         { type: "function_call_output", call_id: "call_1", output: "result" },
       ],
     });
@@ -37,7 +42,9 @@ describe("ResponsesRequestSchema", () => {
   });
 
   it("rejects missing model", () => {
-    expect(ResponsesRequestSchema.safeParse({ input: "Hello" }).success).toBe(false);
+    expect(ResponsesRequestSchema.safeParse({ input: "Hello" }).success).toBe(
+      false,
+    );
   });
 
   it("rejects empty model string", () => {
@@ -47,7 +54,9 @@ describe("ResponsesRequestSchema", () => {
   });
 
   it("rejects missing input", () => {
-    expect(ResponsesRequestSchema.safeParse({ model: "o3-mini" }).success).toBe(false);
+    expect(ResponsesRequestSchema.safeParse({ model: "o3-mini" }).success).toBe(
+      false,
+    );
   });
 
   it("accepts stream: true", () => {

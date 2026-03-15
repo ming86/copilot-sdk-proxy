@@ -2,9 +2,7 @@ import { extractContentText, type Message } from "./schemas.js";
 
 // System/developer messages are skipped because they're passed separately via
 // SessionConfig.systemMessage.
-export function formatPrompt(
-  messages: Message[],
-): string {
+export function formatPrompt(messages: Message[]): string {
   const parts: string[] = [];
 
   for (const msg of messages) {
@@ -33,7 +31,9 @@ export function formatPrompt(
         break;
 
       case "tool":
-        parts.push(`[Tool result for ${msg.tool_call_id ?? "unknown"}]: ${content}`);
+        parts.push(
+          `[Tool result for ${msg.tool_call_id ?? "unknown"}]: ${content}`,
+        );
         break;
 
       case undefined:

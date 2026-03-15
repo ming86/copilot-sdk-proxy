@@ -30,28 +30,40 @@ export class Logger {
   error(msg: string, ...args: unknown[]): void {
     if (this.threshold >= LEVEL_PRIORITY.error) {
       const { label, symbol } = LEVEL_STYLE.error;
-      console.error(`${dim(new Date().toISOString())} ${symbol} ${label} ${msg}`, ...args);
+      console.error(
+        `${dim(new Date().toISOString())} ${symbol} ${label} ${msg}`,
+        ...args,
+      );
     }
   }
 
   warn(msg: string, ...args: unknown[]): void {
     if (this.threshold >= LEVEL_PRIORITY.warning) {
       const { label, symbol } = LEVEL_STYLE.warn;
-      console.warn(`${dim(new Date().toISOString())} ${symbol} ${label} ${msg}`, ...args);
+      console.warn(
+        `${dim(new Date().toISOString())} ${symbol} ${label} ${msg}`,
+        ...args,
+      );
     }
   }
 
   info(msg: string, ...args: unknown[]): void {
     if (this.threshold >= LEVEL_PRIORITY.info) {
       const { label, symbol } = LEVEL_STYLE.info;
-      console.log(`${dim(new Date().toISOString())} ${symbol} ${label} ${msg}`, ...args);
+      console.log(
+        `${dim(new Date().toISOString())} ${symbol} ${label} ${msg}`,
+        ...args,
+      );
     }
   }
 
   debug(msg: string, ...args: unknown[]): void {
     if (this.threshold >= LEVEL_PRIORITY.debug) {
       const { label, symbol } = LEVEL_STYLE.debug;
-      console.log(`${dim(new Date().toISOString())} ${symbol} ${label} ${dim(msg)}`, ...args);
+      console.log(
+        `${dim(new Date().toISOString())} ${symbol} ${label} ${dim(msg)}`,
+        ...args,
+      );
     }
   }
 }

@@ -36,12 +36,16 @@ describe("extractContentText", () => {
         image_url: { url: "http://example.com/img.png" },
       },
     ];
-    expect(() => extractContentText(content)).toThrow("unsupported content type: image_url");
+    expect(() => extractContentText(content)).toThrow(
+      "unsupported content type: image_url",
+    );
   });
 
   it("throws on non-object array element", () => {
     const content = ["not an object"] as unknown as Array<{ type: string }>;
-    expect(() => extractContentText(content)).toThrow("unsupported content type");
+    expect(() => extractContentText(content)).toThrow(
+      "unsupported content type",
+    );
   });
 
   it("throws on missing type field", () => {
@@ -137,7 +141,9 @@ describe("formatPrompt", () => {
     ];
     const result = formatPrompt(messages);
     expect(result).toContain("[Assistant]: Let me search");
-    expect(result).toContain('[Assistant called tool search with args: {"q":"test"}]');
+    expect(result).toContain(
+      '[Assistant called tool search with args: {"q":"test"}]',
+    );
   });
 
   it("assistant with no content but tool_calls only renders calls", () => {
@@ -176,18 +182,14 @@ describe("formatPrompt", () => {
   });
 
   it("slice(0) on first turn produces full prompt", () => {
-    const messages: Message[] = [
-      { role: "user", content: "What is 2+2?" },
-    ];
+    const messages: Message[] = [{ role: "user", content: "What is 2+2?" }];
     const full = formatPrompt(messages);
     const sliced = formatPrompt(messages.slice(0));
     expect(sliced).toBe(full);
   });
 
   it("slice(sentMessageCount) on second turn produces only new messages", () => {
-    const turn1: Message[] = [
-      { role: "user", content: "What is 2+2?" },
-    ];
+    const turn1: Message[] = [{ role: "user", content: "What is 2+2?" }];
     const turn2: Message[] = [
       { role: "user", content: "What is 2+2?" },
       { role: "assistant", content: "4" },

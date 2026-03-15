@@ -42,7 +42,9 @@ export function parseProvider(value: string): ProviderName {
 export function parseIdleTimeout(value: string): number {
   const minutes = parseInt(value, 10);
   if (isNaN(minutes) || minutes < 0) {
-    throw new Error(`Invalid idle timeout "${value}". Must be a non-negative integer (minutes).`);
+    throw new Error(
+      `Invalid idle timeout "${value}". Must be a non-negative integer (minutes).`,
+    );
   }
   return minutes;
 }

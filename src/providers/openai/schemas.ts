@@ -1,5 +1,8 @@
 import { z } from "zod";
-import { OpenAIRequestSchema, type Message } from "llm-schemas/openai/chat-completions";
+import {
+  OpenAIRequestSchema,
+  type Message,
+} from "llm-schemas/openai/chat-completions";
 
 export { OpenAIRequestSchema };
 export type { Message };

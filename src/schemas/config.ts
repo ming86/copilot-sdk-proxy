@@ -18,9 +18,18 @@ export const MCPRemoteServerSchema = z.object({
   timeout: z.number().positive().optional(),
 });
 
-export const MCPServerSchema = z.union([MCPLocalServerSchema, MCPRemoteServerSchema]);
+export const MCPServerSchema = z.union([
+  MCPLocalServerSchema,
+  MCPRemoteServerSchema,
+]);
 
-const VALID_PERMISSION_KINDS = ["read", "write", "shell", "mcp", "url"] as const;
+const VALID_PERMISSION_KINDS = [
+  "read",
+  "write",
+  "shell",
+  "mcp",
+  "url",
+] as const;
 
 export const ApprovalRuleSchema = z.union([
   z.boolean(),
@@ -51,19 +60,19 @@ export const ServerConfigSchema = z.object({
   openai: ProviderConfigSchema.default(PROVIDER_DEFAULTS),
   claude: ProviderConfigSchema.default(PROVIDER_DEFAULTS),
   codex: ProviderConfigSchema.default(PROVIDER_DEFAULTS),
-  allowedCliTools: z.array(z.string()).refine(
-    (arr) => !arr.includes("*") || arr.length === 1,
-    'allowedCliTools: use ["*"] alone to allow all tools, don\'t mix with other entries',
-  ).default([]),
+  allowedCliTools: z
+    .array(z.string())
+    .refine(
+      (arr) => !arr.includes("*") || arr.length === 1,
+      'allowedCliTools: use ["*"] alone to allow all tools, don\'t mix with other entries',
+    )
+    .default([]),
   bodyLimit: z
     .number()
     .positive()
     .max(100, "bodyLimit cannot exceed 100")
     .default(10),
-  requestTimeout: z
-    .number()
-    .min(0, "requestTimeout must be >= 0")
-    .default(0),
+  requestTimeout: z.number().min(0, "requestTimeout must be >= 0").default(0),
   reasoningEffort: ReasoningEffortSchema.optional(),
   autoApprovePermissions: ApprovalRuleSchema.default(true),
 });

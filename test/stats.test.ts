@@ -68,8 +68,16 @@ describe("Stats", () => {
 
     it("accumulates cache tokens", () => {
       const stats = new Stats();
-      stats.recordUsage({ model: "gpt-4", cacheReadTokens: 500, cacheWriteTokens: 100 });
-      stats.recordUsage({ model: "gpt-4", cacheReadTokens: 300, cacheWriteTokens: 200 });
+      stats.recordUsage({
+        model: "gpt-4",
+        cacheReadTokens: 500,
+        cacheWriteTokens: 100,
+      });
+      stats.recordUsage({
+        model: "gpt-4",
+        cacheReadTokens: 300,
+        cacheWriteTokens: 200,
+      });
       const snap = stats.snapshot();
       expect(snap.cacheReadTokens).toBe(800);
       expect(snap.cacheWriteTokens).toBe(300);
@@ -78,7 +86,7 @@ describe("Stats", () => {
     it("accumulates cost", () => {
       const stats = new Stats();
       stats.recordUsage({ model: "gpt-4", cost: 0.05 });
-      stats.recordUsage({ model: "gpt-4", cost: 0.10 });
+      stats.recordUsage({ model: "gpt-4", cost: 0.1 });
       expect(stats.snapshot().totalCost).toBeCloseTo(0.15);
     });
 
@@ -105,9 +113,24 @@ describe("Stats", () => {
   describe("per-model metrics", () => {
     it("tracks metrics separately per model", () => {
       const stats = new Stats();
-      stats.recordUsage({ model: "gpt-4", inputTokens: 100, outputTokens: 50, cost: 0.05 });
-      stats.recordUsage({ model: "claude-3", inputTokens: 200, outputTokens: 75, cost: 0.10 });
-      stats.recordUsage({ model: "gpt-4", inputTokens: 150, outputTokens: 25, cost: 0.03 });
+      stats.recordUsage({
+        model: "gpt-4",
+        inputTokens: 100,
+        outputTokens: 50,
+        cost: 0.05,
+      });
+      stats.recordUsage({
+        model: "claude-3",
+        inputTokens: 200,
+        outputTokens: 75,
+        cost: 0.1,
+      });
+      stats.recordUsage({
+        model: "gpt-4",
+        inputTokens: 150,
+        outputTokens: 25,
+        cost: 0.03,
+      });
 
       const snap = stats.snapshot();
       const models = snap.modelMetrics;
@@ -125,13 +148,21 @@ describe("Stats", () => {
       expect(claude!.requests).toBe(1);
       expect(claude!.inputTokens).toBe(200);
       expect(claude!.outputTokens).toBe(75);
-      expect(claude!.cost).toBeCloseTo(0.10);
+      expect(claude!.cost).toBeCloseTo(0.1);
     });
 
     it("tracks cache tokens per model", () => {
       const stats = new Stats();
-      stats.recordUsage({ model: "gpt-4", cacheReadTokens: 100, cacheWriteTokens: 50 });
-      stats.recordUsage({ model: "gpt-4", cacheReadTokens: 200, cacheWriteTokens: 25 });
+      stats.recordUsage({
+        model: "gpt-4",
+        cacheReadTokens: 100,
+        cacheWriteTokens: 50,
+      });
+      stats.recordUsage({
+        model: "gpt-4",
+        cacheReadTokens: 200,
+        cacheWriteTokens: 25,
+      });
 
       const gpt4 = stats.snapshot().modelMetrics["gpt-4"];
       expect(gpt4).toBeDefined();

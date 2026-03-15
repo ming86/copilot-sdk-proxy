@@ -6,24 +6,36 @@ import type { OpenAIRequest } from "./schemas.js";
 import { formatPrompt } from "./prompt.js";
 import { handleStreaming } from "./streaming.js";
 import { sendOpenAIError as sendError } from "../shared/errors.js";
-import { runHandlerPipeline, type BaseHandlerOptions } from "../shared/handler-core.js";
+import {
+  runHandlerPipeline,
+  type BaseHandlerOptions,
+} from "../shared/handler-core.js";
 
 export type CompletionsHandlerOptions = BaseHandlerOptions<OpenAIRequest>;
 
-export function createCompletionsHandler(ctx: AppContext, manager: ConversationManager, options?: CompletionsHandlerOptions) {
-  const handle = runHandlerPipeline<OpenAIRequest>(ctx, manager, {
-    sendError,
+export function createCompletionsHandler(
+  ctx: AppContext,
+  manager: ConversationManager,
+  options?: CompletionsHandlerOptions,
+) {
+  const handle = runHandlerPipeline<OpenAIRequest>(
+    ctx,
+    manager,
+    {
+      sendError,
 
-    extractSystemMessage: (req) => extractSystemMessages(req.messages),
+      extractSystemMessage: (req) => extractSystemMessages(req.messages),
 
-    formatPrompt: (req, conversation) =>
-      formatPrompt(req.messages.slice(conversation.sentMessageCount)),
+      formatPrompt: (req, conversation) =>
+        formatPrompt(req.messages.slice(conversation.sentMessageCount)),
 
-    messageCount: (req) => req.messages.length,
+      messageCount: (req) => req.messages.length,
 
-    stream: (session, prompt, model, reply, deps) =>
-      handleStreaming(session, prompt, model, reply, deps.logger, deps.stats),
-  }, options);
+      stream: (session, prompt, model, reply, deps) =>
+        handleStreaming(session, prompt, model, reply, deps.logger, deps.stats),
+    },
+    options,
+  );
 
   return async function handleCompletions(
     request: FastifyRequest,
