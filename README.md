@@ -1,4 +1,4 @@
-# copilot-sdk-proxy
+# copilot-sdk-proxy [![npm version](https://img.shields.io/npm/v/copilot-sdk-proxy)](https://www.npmjs.com/package/copilot-sdk-proxy) ![npm downloads](https://img.shields.io/npm/d18m/copilot-sdk-proxy)
 
 A proxy server that wraps the [GitHub Copilot SDK](https://github.com/github/copilot-sdk) and exposes it as an OpenAI, Anthropic, or Codex (Responses) compatible API. Any client that speaks one of these APIs can talk to it.
 
