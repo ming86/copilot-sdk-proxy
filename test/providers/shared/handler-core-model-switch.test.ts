@@ -143,7 +143,7 @@ describe("model switching on reuse", () => {
   it("calls setModel and updates conversation.model when models differ", async () => {
     await switchTo("claude-sonnet-4-5");
 
-    expect(setModel).toHaveBeenCalledWith("claude-sonnet-4-5");
+    expect(setModel).toHaveBeenCalledWith("claude-sonnet-4-5", {});
     expect(conversation.model).toBe("claude-sonnet-4-5");
   });
 
@@ -159,7 +159,7 @@ describe("model switching on reuse", () => {
 
     await switchTo("claude-sonnet-4-5");
 
-    expect(setModel).toHaveBeenCalledWith("claude-sonnet-4-5");
+    expect(setModel).toHaveBeenCalledWith("claude-sonnet-4-5", {});
     expect(conversation.model).toBe("gpt-4");
   });
 
@@ -170,12 +170,39 @@ describe("model switching on reuse", () => {
     expect(conversation.model).toBe("gpt-4");
   });
 
+  it("passes reasoningEffort to setModel when model supports it", async () => {
+    const mock = mockSession();
+    setModel = mock.setModel;
+    const conv = createConversation({ model: "gpt-4", session: mock.session });
+    const ctx = createCtx();
+    ctx.config.reasoningEffort = "high";
+    const mgr: ConversationManager = {
+      findForNewRequest: () => ({ conversation: conv, isReuse: true }),
+      remove: vi.fn(),
+      clearPrimary: vi.fn(),
+    };
+    const switchHandler = runHandlerPipeline(
+      ctx,
+      mgr,
+      createPipeline(),
+    ) as typeof handler;
+
+    await switchHandler(
+      { model: "claude-opus-4-5" },
+      mockReply().reply as never,
+    );
+
+    expect(setModel).toHaveBeenCalledWith("claude-opus-4-5", {
+      reasoningEffort: "high",
+    });
+  });
+
   it("resolves model family fallback before switching", async () => {
     conversation.model = "claude-sonnet-4-5";
 
     await switchTo("claude-opus-4-5");
 
-    expect(setModel).toHaveBeenCalledWith("claude-opus-4-5");
+    expect(setModel).toHaveBeenCalledWith("claude-opus-4-5", {});
     expect(conversation.model).toBe("claude-opus-4-5");
   });
 });

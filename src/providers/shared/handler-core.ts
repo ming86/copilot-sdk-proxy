@@ -119,7 +119,12 @@ export function runHandlerPipeline<
       );
       if (resolved.ok) {
         try {
-          await conversation.session.setModel(resolved.model);
+          await conversation.session.setModel(resolved.model, {
+            ...(resolved.supportsReasoningEffort &&
+              config.reasoningEffort && {
+                reasoningEffort: config.reasoningEffort,
+              }),
+          });
           logger.info(
             `Switched model: "${conversation.model}" → "${resolved.model}"`,
           );
