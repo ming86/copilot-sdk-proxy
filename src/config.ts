@@ -178,11 +178,13 @@ export async function loadAllProviderConfigs(
       : DEFAULT_CONFIG,
   };
 
-  // Reuse buildServerConfig for shared fields, override mcpServers to empty.
-  // The provider arg is arbitrary since shared fields are provider-independent.
+  // Shared config carries only provider-independent fields.
   const shared: ServerConfig = result
     ? {
-        ...buildServerConfig(result.data, result.configDir, "openai"),
+        allowedCliTools: result.data.allowedCliTools,
+        autoApprovePermissions: result.data.autoApprovePermissions,
+        bodyLimit: result.data.bodyLimit * BYTES_PER_MIB,
+        requestTimeoutMs: result.data.requestTimeout * MS_PER_MINUTE,
         mcpServers: {},
       }
     : DEFAULT_CONFIG;
