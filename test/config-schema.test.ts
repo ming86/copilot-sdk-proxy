@@ -137,9 +137,9 @@ describe("ServerConfigSchema", () => {
     expect(result.success).toBe(false);
   });
 
-  it("strips global reasoning effort (moved to per-provider)", () => {
-    const result = ServerConfigSchema.parse({ reasoningEffort: "high" });
-    expect("reasoningEffort" in result).toBe(false);
+  it("rejects global reasoning effort (moved to per-provider)", () => {
+    const result = ServerConfigSchema.safeParse({ reasoningEffort: "high" });
+    expect(result.success).toBe(false);
   });
 
   it("accepts per-provider reasoning effort", () => {
