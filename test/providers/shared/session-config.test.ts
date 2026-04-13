@@ -355,6 +355,28 @@ describe("createSessionConfig", () => {
     );
   });
 
+  it("hooks.onErrorOccurred stringifies non-string error values", () => {
+    const warnLogger = new Logger("warning");
+    const spy = vi.spyOn(warnLogger, "warn").mockImplementation(() => {});
+    const result = createSessionConfig({
+      model: "gpt-4",
+      logger: warnLogger,
+      config: defaultConfig(),
+      supportsReasoningEffort: false,
+    });
+    result.hooks!.onErrorOccurred!(
+      {
+        error: { code: 400, detail: "Bad Request" } as unknown as string,
+        errorContext: "model_call",
+        recoverable: true,
+        timestamp: 0,
+        cwd: "/",
+      } as never,
+      { sessionId: "test" },
+    );
+    expect(spy).toHaveBeenCalledWith(expect.stringContaining('"code":400'));
+  });
+
   it("hooks.onErrorOccurred does not retry system errors", () => {
     const warnLogger = new Logger("warning");
     const spy = vi.spyOn(warnLogger, "warn").mockImplementation(() => {});

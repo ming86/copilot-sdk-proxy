@@ -128,8 +128,12 @@ export function createSessionConfig({
       },
 
       onErrorOccurred: (input) => {
+        const error =
+          typeof input.error === "string"
+            ? input.error
+            : JSON.stringify(input.error);
         logger.warn(
-          `SDK error (${input.errorContext}, ${input.recoverable ? "recoverable" : "not recoverable"}): ${input.error}`,
+          `SDK error (${input.errorContext}, ${input.recoverable ? "recoverable" : "not recoverable"}): ${error}`,
         );
         if (
           input.recoverable &&
