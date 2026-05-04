@@ -35,7 +35,7 @@ export class CopilotService {
         ),
       ),
       ...(options.githubToken && {
-        githubToken: options.githubToken,
+        gitHubToken: options.githubToken,
         useLoggedInUser: false,
       }),
     });
