@@ -5,4 +5,7 @@ export default defineConfig({
     include: ["test/**/*.test.ts"],
     environment: "node",
   },
+  resolve: {
+    conditions: ["copilot-sdk-proxy-dev"],
+  },
 });

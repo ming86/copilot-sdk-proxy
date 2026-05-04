@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { PermissionRequest } from "@github/copilot-sdk";
 
 export const MCPLocalServerSchema = z.object({
   type: z.union([z.literal("local"), z.literal("stdio")]),
@@ -29,7 +30,10 @@ const VALID_PERMISSION_KINDS = [
   "shell",
   "mcp",
   "url",
-] as const;
+  "custom-tool",
+  "memory",
+  "hook",
+] as const satisfies readonly PermissionRequest["kind"][];
 
 export const ApprovalRuleSchema = z.union([
   z.boolean(),

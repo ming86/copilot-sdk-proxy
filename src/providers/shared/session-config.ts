@@ -91,11 +91,27 @@ export function createSessionConfig({
       logger.debug(
         `Permission "${request.kind}": ${approved ? "approved" : "denied"}`,
       );
-      return Promise.resolve(
-        approved
-          ? ({ kind: "approve-once" } satisfies PermissionRequestResult)
-          : ({ kind: "reject" } satisfies PermissionRequestResult),
-      );
+      if (!approved) {
+        return Promise.resolve({
+          kind: "reject",
+        } satisfies PermissionRequestResult);
+      }
+      // Hoist read/write/memory to session scope so the SDK stops asking again.
+      // Other kinds (shell, mcp, url, custom-tool, hook) need payload data not
+      // present on PermissionRequest, so we approve them per-call.
+      switch (request.kind) {
+        case "read":
+        case "write":
+        case "memory":
+          return Promise.resolve({
+            kind: "approve-for-session",
+            approval: { kind: request.kind },
+          } satisfies PermissionRequestResult);
+        default:
+          return Promise.resolve({
+            kind: "approve-once",
+          } satisfies PermissionRequestResult);
+      }
     },
 
     hooks: {
