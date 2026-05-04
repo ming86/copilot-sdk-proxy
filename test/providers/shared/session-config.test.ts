@@ -163,7 +163,7 @@ describe("createSessionConfig", () => {
       { kind: "read" },
       { sessionId: "test" },
     );
-    expect(response.kind).toBe("approved");
+    expect(response.kind).toBe("approve-once");
   });
 
   it("onPermissionRequest denies when autoApprovePermissions is false", async () => {
@@ -177,7 +177,7 @@ describe("createSessionConfig", () => {
       { kind: "read" },
       { sessionId: "test" },
     );
-    expect(response.kind).toBe("denied-by-rules");
+    expect(response.kind).toBe("reject");
   });
 
   it("onPermissionRequest approves specific kinds", async () => {
@@ -191,12 +191,12 @@ describe("createSessionConfig", () => {
       { kind: "read" },
       { sessionId: "test" },
     );
-    expect(readResponse.kind).toBe("approved");
+    expect(readResponse.kind).toBe("approve-once");
     const shellResponse = await result.onPermissionRequest(
       { kind: "shell" },
       { sessionId: "test" },
     );
-    expect(shellResponse.kind).toBe("denied-by-rules");
+    expect(shellResponse.kind).toBe("reject");
   });
 
   it("onUserInputRequest returns a refusal message", async () => {

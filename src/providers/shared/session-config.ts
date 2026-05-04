@@ -93,11 +93,8 @@ export function createSessionConfig({
       );
       return Promise.resolve(
         approved
-          ? ({ kind: "approved" } satisfies PermissionRequestResult)
-          : ({
-              kind: "denied-by-rules",
-              rules: [],
-            } satisfies PermissionRequestResult),
+          ? ({ kind: "approve-once" } satisfies PermissionRequestResult)
+          : ({ kind: "reject" } satisfies PermissionRequestResult),
       );
     },
 
