@@ -163,8 +163,45 @@ describe("createSessionConfig", () => {
       { kind: "read" },
       { sessionId: "test" },
     );
-    expect(response.kind).toBe("approve-once");
+    expect(response.kind).toBe("approve-for-session");
   });
+
+  it.each(["read", "write", "memory"] as const)(
+    "onPermissionRequest hoists %s to session scope",
+    async (kind) => {
+      const result = createSessionConfig({
+        model: "gpt-4",
+        logger,
+        config: defaultConfig({ autoApprovePermissions: true }),
+        supportsReasoningEffort: false,
+      });
+      const response = await result.onPermissionRequest(
+        { kind },
+        { sessionId: "test" },
+      );
+      expect(response).toEqual({
+        kind: "approve-for-session",
+        approval: { kind },
+      });
+    },
+  );
+
+  it.each(["shell", "mcp", "url", "custom-tool", "hook"] as const)(
+    "onPermissionRequest uses approve-once for %s",
+    async (kind) => {
+      const result = createSessionConfig({
+        model: "gpt-4",
+        logger,
+        config: defaultConfig({ autoApprovePermissions: true }),
+        supportsReasoningEffort: false,
+      });
+      const response = await result.onPermissionRequest(
+        { kind },
+        { sessionId: "test" },
+      );
+      expect(response).toEqual({ kind: "approve-once" });
+    },
+  );
 
   it("onPermissionRequest denies when autoApprovePermissions is false", async () => {
     const result = createSessionConfig({
@@ -191,7 +228,7 @@ describe("createSessionConfig", () => {
       { kind: "read" },
       { sessionId: "test" },
     );
-    expect(readResponse.kind).toBe("approve-once");
+    expect(readResponse.kind).toBe("approve-for-session");
     const shellResponse = await result.onPermissionRequest(
       { kind: "shell" },
       { sessionId: "test" },

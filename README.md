@@ -102,7 +102,8 @@ The config file uses [JSON5](https://json5.org/) format:
   // reasoningEffort: null,
 
   // Auto-approve permission requests. Set to true to approve all, false to deny
-  // all, or pass an array of specific kinds: ["read", "write", "shell", "mcp", "url"].
+  // all, or pass an array of specific kinds:
+  // ["read", "write", "shell", "mcp", "url", "custom-tool", "memory", "hook"].
   autoApprovePermissions: true,
 }
 ```

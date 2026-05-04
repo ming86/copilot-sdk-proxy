@@ -24,7 +24,8 @@
   allowedCliTools: ["*"],
 
   // Auto-approve permission requests. Set to true to approve all, false to deny
-  // all, or pass an array of specific kinds: ["read", "write", "shell", "mcp", "url"].
+  // all, or pass an array of specific kinds:
+  // ["read", "write", "shell", "mcp", "url", "custom-tool", "memory", "hook"].
   autoApprovePermissions: true,
 
   // Maximum request body size in MiB.
