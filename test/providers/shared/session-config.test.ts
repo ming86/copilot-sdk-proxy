@@ -31,6 +31,16 @@ describe("createSessionConfig", () => {
     expect(result.streaming).toBe(true);
   });
 
+  it("disables sub-agent streaming events to preserve pre-0.3.0 behavior", () => {
+    const result = createSessionConfig({
+      model: "gpt-4",
+      logger,
+      config: defaultConfig(),
+      supportsReasoningEffort: false,
+    });
+    expect(result.includeSubAgentStreamingEvents).toBe(false);
+  });
+
   it("includes system message when provided", () => {
     const result = createSessionConfig({
       model: "gpt-4",

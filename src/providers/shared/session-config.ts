@@ -51,6 +51,7 @@ export function createSessionConfig({
     clientName: "copilot-sdk-proxy",
     model,
     streaming: true,
+    includeSubAgentStreamingEvents: false,
     infiniteSessions: { enabled: true },
     workingDirectory: cwd ?? process.cwd(),
     ...(provider && { provider }),
